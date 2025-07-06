@@ -3,6 +3,8 @@
 export https_proxy=http://10.162.37.16:8128
 export http_proxy=http://10.162.37.16:8128
 
+EXP_NAME="ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k"
+
 set -x
 
 torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
@@ -16,14 +18,14 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --mm_inv_projector_lr 1e-4 \
     \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path Qwen/Qwen2-7B-Instruct \
-    --output_dir ./checkpoints/ross-siglip-qwen2-7b-pt558k \
-    --vision_tower /data/llm_model_zoo/siglip-so400m-patch14-384 \
+    --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
+    --output_dir ./checkpoints/$EXP_NAME \
+    --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version plain \
-    --mm_pixel_decoder /data/llm_model_zoo/FLUX.1-dev \
+    --mm_pixel_decoder /mnt/haochen/hf_home/FLUX.1-dev/vae \
     \
-    --data_path ./playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
-    --image_folder ./playground/data/LLaVA-Pretrain/images \
+    --data_path /mnt/haochen/datasets/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
+    --image_folder /mnt/haochen/datasets/LLaVA-Pretrain \
     \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
@@ -47,4 +49,4 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb \
-    --run_name "ross-siglip-qwen2-7b-pt558k"
+    --run_name $EXP_NAME
