@@ -1,5 +1,10 @@
 #!/bin/bash
 
+export https_proxy=http://10.162.37.16:8128
+export http_proxy=http://10.162.37.16:8128
+
+EXP_NAME="ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"
+
 set -x
 
 torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
@@ -12,16 +17,16 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --warmup_ratio 0.03 \
     \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path Qwen/Qwen2-7B-Instruct \
-    --pretrain_mm_mlp_adapter ./checkpoints/ross-siglip-qwen2-7b-pt558k/mm_projector.bin \
-    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-siglip-qwen2-7b-pt558k/mm_inv_projector.bin \
-    --output_dir ./checkpoints/ross-siglip-qwen2-7b-pt558k-sft737k \
-    --vision_tower google/siglip-so400m-patch14-384 \
+    --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
+    --pretrain_mm_mlp_adapter ./checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k/mm_projector.bin \
+    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k/mm_inv_projector.bin \
+    --output_dir ./checkpoints/$EXP_NAME \
+    --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version qwen_2 \
-    --mm_pixel_decoder ./pretrained_vae \
+    --mm_pixel_decoder /mnt/haochen/hf_home/FLUX.1-dev/vae \
     \
-    --data_path ./playground/data/cambrian737k.json \
-    --image_folder ./playground/data \
+    --data_path /mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json \
+    --image_folder /mnt/haochen/datasets/Cambrian-737K/Cambrian737k \
     \
     --mm_projector_type mlp2x_gelu \
     --mm_inv_projector_type denoiser_vit3x \
@@ -42,9 +47,12 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --tf32 True \
-    --model_max_length 32768 \
+    --model_max_length 8192 \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb \
-    --run_name "ross-siglip-qwen2-7b-pt558k-sft737k"
+    --run_name $EXP_NAME
+
+rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME

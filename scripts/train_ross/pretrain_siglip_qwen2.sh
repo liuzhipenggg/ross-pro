@@ -50,3 +50,6 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --lazy_preprocess True \
     --report_to wandb \
     --run_name $EXP_NAME
+
+rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME
