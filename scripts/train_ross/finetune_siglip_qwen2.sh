@@ -4,6 +4,7 @@ export https_proxy=http://10.162.37.16:8128
 export http_proxy=http://10.162.37.16:8128
 
 EXP_NAME="ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"
+export WANDB_PROJECT=ross-pro
 
 set -x
 
@@ -40,7 +41,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --per_device_eval_batch_size 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 100 \
+    --save_steps 5755 \
     --save_total_limit 1 \
     --save_only_model \
     --weight_decay 0. \
@@ -54,5 +55,5 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --report_to wandb \
     --run_name $EXP_NAME
 
-rm -fr ./checkpoints/$EXP_NAME/checkpoint*
-cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+# rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+# cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME

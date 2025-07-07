@@ -4,6 +4,7 @@ export https_proxy=http://10.162.37.16:8128
 export http_proxy=http://10.162.37.16:8128
 
 EXP_NAME="ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k"
+export WANDB_PROJECT=ross-pro
 
 set -x
 
