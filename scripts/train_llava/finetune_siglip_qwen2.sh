@@ -1,5 +1,11 @@
 #!/bin/bash
 
+export https_proxy=http://10.162.37.16:8128
+export http_proxy=http://10.162.37.16:8128
+
+EXP_NAME="llava-siglip-qwen2-7b-pt558k-sft737k"
+export WANDB_PROJECT=ross-pro
+
 set -x
 
 torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
@@ -12,14 +18,14 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --warmup_ratio 0.03 \
     \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path Qwen/Qwen2-7B-Instruct \
-    --pretrain_mm_mlp_adapter ./checkpoints/llava-v1.5-siglip-qwen2-7b-pt558k/mm_projector.bin \
-    --output_dir ./checkpoints/llava-v1.5-siglip-qwen2-7b-pt558k-sft737k \
-    --vision_tower google/siglip-so400m-patch14-384 \
+    --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
+    --pretrain_mm_mlp_adapter ./checkpoints/llava-siglip-qwen2-7b-pt558k/mm_projector.bin \
+    --output_dir ./checkpoints/$EXP_NAME \
+    --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version qwen_2 \
     \
-    --data_path ./playground/data/cambrian737k.json \
-    --image_folder ./playground/data \
+    --data_path /mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json \
+    --image_folder /mnt/haochen/datasets/Cambrian-737K/Cambrian737k \
     \
     --mm_projector_type mlp2x_gelu \
     --mm_inv_projector_type denoiser_vit3x \
@@ -33,7 +39,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --per_device_eval_batch_size 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 24000 \
+    --save_steps 5755 \
     --save_total_limit 1 \
     --save_only_model \
     --weight_decay 0. \
@@ -45,4 +51,4 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb \
-    --run_name "llava-v1.5-siglip-qwen2-7b-pt558k-sft737k"
+    --run_name $EXP_NAME

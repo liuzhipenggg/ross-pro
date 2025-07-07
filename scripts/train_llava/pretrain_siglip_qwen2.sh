@@ -1,5 +1,11 @@
 #!/bin/bash
 
+export https_proxy=http://10.162.37.16:8128
+export http_proxy=http://10.162.37.16:8128
+
+EXP_NAME="llava-siglip-qwen2-7b-pt558k"
+export WANDB_PROJECT=ross-pro
+
 set -x
 
 torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
@@ -12,13 +18,13 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --warmup_ratio 0.03 \
     \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path Qwen/Qwen2-7B-Instruct \
-    --output_dir ./checkpoints/llava-v1.5-siglip-qwen2-7b-pt558k \
-    --vision_tower google/siglip-so400m-patch14-384 \
+    --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
+    --output_dir ./checkpoints/$EXP_NAME \
+    --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version plain \
     \
-    --data_path ./playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
-    --image_folder ./playground/data/LLaVA-Pretrain/images \
+    --data_path /mnt/haochen/datasets/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
+    --image_folder /mnt/haochen/datasets/LLaVA-Pretrain \
     \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
@@ -42,4 +48,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
     --report_to wandb \
-    --run_name "llava-v1.5-siglip-qwen2-7b-pt558k"
+    --run_name $EXP_NAME
+
+rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME
