@@ -1406,8 +1406,8 @@ ola_series = {
 
 ross_series = {
     "ross-qwen2-7b": partial(Ross, model_path="HaochenWang/ross-qwen2-7b"),
-    "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k": partial(Ross, model_path="/mnt/haochen/ross-pro-ckpt/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"),
-    "llava-siglip-qwen2-7b-pt558k-sft737k": partial(Ross, model_path="/mnt/haochen/ross-pro-ckpt/llava-siglip-qwen2-7b-pt558k-sft737k")
+    "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"),
+    "llava-siglip-qwen2-7b-pt558k-sft737k": partial(Ross, model_path="../checkpoints/llava-siglip-qwen2-7b-pt558k-sft737k")
 }
 
 ursa_series = {
