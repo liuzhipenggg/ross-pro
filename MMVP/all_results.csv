@@ -1,0 +1,2 @@
+model,time,total,correct,accuracy
+llava-siglip-qwen2-7b-pt558k-sft737k,2025-07-08 17:11:26,300.0,150,50.0

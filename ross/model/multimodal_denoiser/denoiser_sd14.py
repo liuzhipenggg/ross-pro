@@ -54,7 +54,7 @@ class RossStableDiffusion14(nn.Module):
         noisy_model_input = self.noise_scheduler.add_noise(target, noise, timesteps)
 
         # Obtain hidden states
-        encoder_hidden_states = self.mlp(z)
+        encoder_hidden_states = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
 
         # Predict the noise residual
         model_pred = self.unet(
