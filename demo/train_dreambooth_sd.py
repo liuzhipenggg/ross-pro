@@ -49,7 +49,7 @@ from diffusers import (
     DDPMScheduler,
     DiffusionPipeline,
     StableDiffusionPipeline,
-    UNet2DConditionModel,
+    # UNet2DConditionModel,
 )
 from diffusers.optimization import get_scheduler
 from diffusers.training_utils import compute_snr
@@ -57,6 +57,8 @@ from diffusers.utils import check_min_version, is_wandb_available
 from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_card
 from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
+
+from modeling.unet_2d_condition import UNet2DConditionModel
 
 
 if is_wandb_available():
@@ -1235,11 +1237,13 @@ def main(args):
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(unet):
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
+                print("pixel_values shape: ", pixel_values.shape)   # [bsz, 3, H, W]
 
                 if vae is not None:
                     # Convert images to latent space
                     model_input = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()
                     model_input = model_input * vae.config.scaling_factor
+                    print("model_input shape:", model_input.shape)  # [bsz, channels, H//8, W//8]
                 else:
                     model_input = pixel_values
 
@@ -1284,9 +1288,14 @@ def main(args):
                 model_pred = unet(
                     noisy_model_input, timesteps, encoder_hidden_states, class_labels=class_labels, return_dict=False
                 )[0]
+                print("noisy_model_input shape:", noisy_model_input.shape)  # [bsz, channels, h, w]
+                print("timesteps shape:", timesteps.shape)  # [bsz]
+                print("encoder_hidden_states shape:", encoder_hidden_states.shape)  # [bsz, seq_len, embed_dim]
+                print("class_labels:", class_labels)    # None
 
                 if model_pred.shape[1] == 6:
                     model_pred, _ = torch.chunk(model_pred, 2, dim=1)
+                print("model_pred shape:", model_pred.shape)    # [bsz, channels, h, w]
 
                 # Get the target for loss depending on the prediction type
                 if noise_scheduler.config.prediction_type == "epsilon":
