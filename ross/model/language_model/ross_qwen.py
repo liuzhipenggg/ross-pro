@@ -204,7 +204,8 @@ class RossQwen2ForCausalLM(Qwen2ForCausalLM, RossMetaForCausalLM):
 
         vm_loss = None
         if self.training and getattr(self.config, 'ross_enable', False):
-            vm_loss = self.compute_vm_loss(images, hidden_states, boi_ids, eoi_ids)
+            # vm_loss = self.compute_vm_loss(images, hidden_states, boi_ids, eoi_ids)
+            vm_loss = self.compute_vm_loss_sd14(images, hidden_states, boi_ids, eoi_ids)
             loss = loss + vm_loss
 
         if not return_dict:

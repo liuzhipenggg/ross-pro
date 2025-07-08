@@ -1165,9 +1165,6 @@ class UNet2DConditionModel(
             encoder_hidden_states=encoder_hidden_states, added_cond_kwargs=added_cond_kwargs
         )
 
-        print("encoder_hidden_states:", encoder_hidden_states.shape)
-        encoder_hidden_states = encoder_hidden_states.repeat(1, 2, 1)
-
         # 2. pre-process
         sample = self.conv_in(sample)   # [bsz, 320, H//8, W//8]
 
