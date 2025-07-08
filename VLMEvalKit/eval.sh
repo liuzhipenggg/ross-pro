@@ -8,6 +8,4 @@ set -x
 
 python3 run.py \
     --data POPE HallusionBench MMBench_DEV_EN MMBench_DEV_CN SEEDBench_IMG OCRBench MMVP ChartQA_TEST RealWorldQA \
-    --model llava-siglip-qwen2-7b-pt558k-sft737k ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k \
-    --verbose
-
+    --model llava-siglip-qwen2-7b-pt558k-sft737k ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k

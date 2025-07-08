@@ -18,7 +18,9 @@ class FluxDecoder(nn.Module):
 
     @property
     def shift_factor(self):
-        return self.pixel_decoder.config.get("shift_factor", 0.)
+        if self.pixel_decoder.config.shift_factor is not None:
+            return self.pixel_decoder.config.shift_factor
+        return 0.
 
     @property
     def latent_dim(self):

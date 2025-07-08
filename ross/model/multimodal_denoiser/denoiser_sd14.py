@@ -51,7 +51,7 @@ class RossStableDiffusion14(nn.Module):
 
         # Add noise to the model input according to the noise magnitude at each timestep
         # (this is the forward diffusion process)
-        noisy_model_input = noise_scheduler.add_noise(target, noise, timesteps)
+        noisy_model_input = self.noise_scheduler.add_noise(target, noise, timesteps)
 
         # Obtain hidden states
         encoder_hidden_states = self.mlp(z)
