@@ -3,6 +3,7 @@ import torch.nn as nn
 import re
 
 from ross.model.multimodal_denoiser.denoiser_dit import RossDenoiser
+from ross.model.multimodal_denoiser.denoiser_sd14 import RossStableDiffusion14
 
 
 class IdentityMap(nn.Module):
@@ -65,19 +66,18 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             n_patches=config.image_embed_len,
         )
 
-    mlp_gelu_match = re.match(r'^mlp(\d+)x_gelu$', projector_type)
-    if mlp_gelu_match:
-        mlp_depth = int(mlp_gelu_match.group(1))
-        modules = [nn.Linear(config.hidden_size, config.hidden_size)]
-        if mlp_depth > 2:
-            for _ in range(1, mlp_depth - 1):
-                modules.append(nn.GELU())
-                modules.append(nn.Linear(config.hidden_size, config.hidden_size))
-        modules.append(nn.GELU())
-        modules.append(nn.Linear(config.hidden_size, config.mm_inv_hidden_size))
-        return nn.Sequential(*modules)
+    elif projector_type.startswith("sd14_"):
+        unet_path = config.mm_pixel_decoder.replace("/vae", "/unet")
+        assert unet_path.endswith("/unet")
 
-    if projector_type == 'identity':
-        return IdentityMap()
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sd14_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossStableDiffusion14(
+            z_channel=config.hidden_size,
+            unet_path=unet_path,
+            mlp_depth=mlp_depth,
+            n_patches=config.image_embed_len,
+        )
 
     raise ValueError(f'Unknown projector type: {projector_type}')

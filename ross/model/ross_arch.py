@@ -511,6 +511,50 @@ class RossMetaForCausalLM(ABC):
         vm_loss = (vm_loss.view(batch_size, -1).mean() * vm_loss_mask).sum() / (vm_loss_mask.sum() + eps)
         return vm_loss
 
+    def compute_vm_loss_sd14(
+        self,
+        images: torch.Tensor,
+        hidden_states: torch.Tensor,
+        boi_ids: torch.Tensor,
+        eoi_ids: torch.Tensor,
+        eps: float = 1e-6,
+    ):
+        batch_size = hidden_states.shape[0]
+        vm_loss_mask = torch.zeros((batch_size,), device=hidden_states.device).bool()
+        image_hidden_states = torch.zeros((batch_size, self.model.image_embed_len, hidden_states.shape[-1]),
+                                          dtype=hidden_states.dtype,
+                                          device=hidden_states.device)
+
+        for batch_index, (cur_boi_id, cur_eoi_id, cur_hidden_state) in enumerate(zip(boi_ids, eoi_ids, hidden_states)):
+            if (cur_boi_id is not None) and (cur_eoi_id is not None):
+                assert cur_eoi_id - cur_boi_id + 1 == self.model.image_embed_len
+                assert cur_hidden_state.shape[0] >= cur_eoi_id
+                image_hidden_states[batch_index] = cur_hidden_state[cur_boi_id: cur_eoi_id + 1]
+                vm_loss_mask[batch_index] = True
+
+        images_std = torch.tensor(self.config.image_std, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
+        images_mean = torch.tensor(self.config.image_mean, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
+        images_vae = ((images * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
+        images_vae = F.interpolate(images_vae, size=(self.config.decode_image_size, self.config.decode_image_size), mode='bilinear')
+
+        with torch.no_grad():
+            posterior = self.model.pixel_decoder.encode(images_vae).latent_dist
+            z_q = (posterior.sample() - self.model.pixel_decoder.shift_factor) * self.model.pixel_decoder.scaling_factor
+            # group each (2x2) window
+            # z_q = z_q.unfold(2, 2, 2).unfold(3, 2, 2)
+            # z_q = rearrange(z_q, 'b c h w p1 p2 -> b (c p1 p2) h w').contiguous()
+
+        with torch.amp.autocast('cuda', dtype=torch.float32):
+            image_hidden_states = self.model.mm_inv_projector.ln_pre(
+                image_hidden_states) + self.model.mm_inv_projector.pos_embed
+            h = w = int(image_hidden_states.shape[1] ** 0.5)
+            image_hidden_states = rearrange(image_hidden_states, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
+            vm_loss = self.model.mm_inv_projector(z=image_hidden_states.float(), target=z_q.float())
+        vm_loss = vm_loss.float()
+        vm_loss_mask = vm_loss_mask.repeat(4)
+        vm_loss = (vm_loss.view(batch_size, -1).mean() * vm_loss_mask).sum() / (vm_loss_mask.sum() + eps)
+        return vm_loss
+
 
 @dataclass
 class CausalLMOutputWithPastWithVM(ModelOutput):
