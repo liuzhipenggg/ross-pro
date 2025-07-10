@@ -1,4 +1,4 @@
-export MODEL_NAME="/root/paddlejob/stable-diffusion-2-1"
+export MODEL_NAME="/root/paddlejob/stable-diffusion-v1-5"
 export INSTANCE_DIR="../data/dog"
 export OUTPUT_DIR="trained-sd"
 export WANDB_PROJECT="dreambooth"

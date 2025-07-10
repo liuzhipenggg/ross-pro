@@ -11,7 +11,7 @@ from diffusers import DDPMScheduler
 from ross.model.multimodal_denoiser.modeling.unet_2d_condition import UNet2DConditionModel
 
 
-class RossStableDiffusion14(nn.Module):
+class RossStableDiffusion(nn.Module):
     def __init__(
         self,
         unet_path,
