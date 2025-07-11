@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 from einops import repeat, rearrange
 from diffusers import DDPMScheduler
+from diffusers.models.unets.unet_2d_blocks import CrossAttnUpBlock2D, CrossAttnDownBlock2D, UNetMidBlock2DCrossAttn
 
 from ross.model.multimodal_denoiser.modeling.unet_2d_condition import UNet2DConditionModel
 
@@ -28,27 +29,31 @@ class RossStableDiffusion(nn.Module):
         self.unet = UNet2DConditionModel.from_pretrained(unet_path)
         self.unet.eval()
         self.unet.requires_grad_(False)
+
         # tune cross attention layers
         for blk in self.unet.up_blocks:
-            for layer in blk.attentions:
+            if isinstance(blk, CrossAttnUpBlock2D):
+                for layer in blk.attentions:
+                    for block in layer.transformer_blocks:
+                        for p in block.attn2.to_k.parameters():
+                            p.requires_grad = True
+                        for p in block.attn2.to_v.parameters():
+                            p.requires_grad = True
+        for blk in self.unet.down_blocks:
+            if isinstance(blk, CrossAttnDownBlock2D):
+                for layer in blk.attentions:
+                    for block in layer.transformer_blocks:
+                        for p in block.attn2.to_k.parameters():
+                            p.requires_grad = True
+                        for p in block.attn2.to_v.parameters():
+                            p.requires_grad = True
+        if isinstance(self.unet.mid_block, UNetMidBlock2DCrossAttn):
+            for layer in self.unet.mid_block.attentions:
                 for block in layer.transformer_blocks:
                     for p in block.attn2.to_k.parameters():
                         p.requires_grad = True
                     for p in block.attn2.to_v.parameters():
                         p.requires_grad = True
-        for blk in self.unet.down_blocks[1:]:
-            for layer in blk.attentions:
-                for block in layer.transformer_blocks:
-                    for p in block.attn2.to_k.parameters():
-                        p.requires_grad = True
-                    for p in block.attn2.to_v.parameters():
-                        p.requires_grad = True
-        for layer in self.unet.mid_block.attentions:
-            for block in layer.transformer_blocks:
-                for p in block.attn2.to_k.parameters():
-                    p.requires_grad = True
-                for p in block.attn2.to_v.parameters():
-                    p.requires_grad = True
 
         mlp_modules = [nn.Linear(z_channel, mlp_out)]
         for _ in range(1, mlp_depth):
