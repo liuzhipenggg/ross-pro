@@ -1,4 +1,4 @@
-export MODEL_NAME="/root/paddlejob/stable-diffusion-v1-5"
+export MODEL_NAME="/root/paddlejob/stable-diffusion-2-1"
 export INSTANCE_DIR="../data/dog"
 export OUTPUT_DIR="trained-sd"
 export WANDB_PROJECT="dreambooth"
@@ -12,7 +12,7 @@ accelerate launch --main_process_port=8841 train_dreambooth_sd.py \
   --instance_data_dir=$INSTANCE_DIR \
   --output_dir=$OUTPUT_DIR \
   --instance_prompt="a photo of sks dog" \
-  --resolution=512 \
+  --resolution=768 \
   --train_batch_size=1 \
   --gradient_accumulation_steps=1 \
   --learning_rate=5e-6 \
