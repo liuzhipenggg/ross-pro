@@ -1,3 +1,7 @@
 model,time,total,correct,accuracy
 llava-siglip-qwen2-7b-pt558k-sft737k,2025-07-08 17:11:26,300.0,150,50.0
 ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k,2025-07-08 17:14:46,300.0,148,49.333333333333336
+ross-pro-siglip-qwen2-7b-sd14-kl8-mlp2x-pt558k-sft737k_checkpoint-5755,2025-07-13 14:39:32,300.0,136,45.333333333333336
+ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k_checkpoint-5755,2025-07-13 14:44:37,300.0,152,50.666666666666664
+ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-sft737k_checkpoint-5755,2025-07-13 14:47:43,300.0,144,48.0
+ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn_checkpoint-5755,2025-07-13 14:53:04,300.0,152,50.666666666666664

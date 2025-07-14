@@ -5,7 +5,7 @@ export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
 CUDA_VISIBLE_DEVICES=1 python3 mmvp_eval.py \
-    --model_path ../checkpoints/$EXP_NAME \
+    --model_path ../checkpoints/$EXP_NAME/checkpoint-5755 \
     --conv_mode qwen_2 \
     --answers_file ./answers/$EXP_NAME.jsonl
 

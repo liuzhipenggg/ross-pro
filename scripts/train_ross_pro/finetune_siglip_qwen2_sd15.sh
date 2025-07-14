@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -17,11 +17,13 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --gradient_accumulation_steps 4 \
     --learning_rate 2e-5 \
     --warmup_ratio 0.03 \
+    --unfreeze_mm_vision_tower \
+    --mm_vision_tower_lr 2e-6 \
     \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
-    --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-ftcrossattn/mm_projector.bin \
-    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-ftcrossattn/mm_inv_projector.bin \
+    --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k/mm_projector.bin \
+    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k/mm_inv_projector.bin \
     --output_dir ./checkpoints/$EXP_NAME \
     --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version qwen_2 \
@@ -56,5 +58,5 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --report_to wandb \
     --run_name $EXP_NAME
 
-# rm -fr ./checkpoints/$EXP_NAME/checkpoint*
-# cp -r ./checkpoints/$EXP_NAME /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+mkdir /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+rsync -ah --progress ./checkpoints/$EXP_NAME/checkpoint-5755/* /mnt/haochen/ross-pro-ckpt/$EXP_NAME
