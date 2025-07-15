@@ -511,7 +511,7 @@ class RossMetaForCausalLM(ABC):
         vm_loss = (vm_loss.view(batch_size, -1).mean() * vm_loss_mask).sum() / (vm_loss_mask.sum() + eps)
         return vm_loss
 
-    def compute_vm_loss_sd14(
+    def compute_vm_loss_sd(
         self,
         images: torch.Tensor,
         hidden_states: torch.Tensor,

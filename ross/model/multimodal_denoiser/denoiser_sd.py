@@ -27,8 +27,8 @@ class RossStableDiffusion(nn.Module):
         torch.nn.init.normal_(self.pos_embed, std=.02)
 
         self.unet = UNet2DConditionModel.from_pretrained(unet_path)
-        self.unet.eval()
-        self.unet.requires_grad_(False)
+        # self.unet.eval()
+        # self.unet.requires_grad_(False)
 
         # tune cross attention layers
         # for blk in self.unet.up_blocks:

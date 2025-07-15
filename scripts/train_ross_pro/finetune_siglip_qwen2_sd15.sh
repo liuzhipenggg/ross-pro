@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip-ftsd"
 export WANDB_PROJECT=ross-pro
 
 set -x

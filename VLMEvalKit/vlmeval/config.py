@@ -1407,11 +1407,13 @@ ola_series = {
 ross_series = {
     "ross-qwen2-7b": partial(Ross, model_path="HaochenWang/ross-qwen2-7b"),
     "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"),
+    "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k-ftclip/checkpoint-5755"),
     "llava-siglip-qwen2-7b-pt558k-sft737k": partial(Ross, model_path="../checkpoints/llava-siglip-qwen2-7b-pt558k-sft737k"),
     "ross-pro-siglip-qwen2-7b-sd14-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd14-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip/checkpoint-5755"),
 }
 
 ursa_series = {
