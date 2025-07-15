@@ -56,7 +56,7 @@ class RossSD3(nn.Module):
         self.logit_std = logit_std
         self.mode_scale = mode_scale
 
-     def get_sigmas(self, timesteps, n_dim=4, dtype=torch.float32, device="cpu"):
+    def get_sigmas(self, timesteps, n_dim=4, dtype=torch.float32, device="cpu"):
         sigmas = self.noise_scheduler_copy.sigmas.to(device=device, dtype=dtype)
         schedule_timesteps = self.noise_scheduler_copy.timesteps.to(device)
         timesteps = timesteps.to(device)
