@@ -111,12 +111,9 @@ class RossSD3(nn.Module):
         # and instead post-weight the loss
         weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.weighting_scheme, sigmas=sigmas)
 
-        # Get the target for loss depending on the prediction type
-        noise_target = model_input
-
         # Compute regular loss.
         loss = torch.mean(
-            (weighting.float() * (model_pred.float() - noise_target.float()) ** 2).reshape(noise_target.shape[0], -1),
+            (weighting.float() * (model_pred.float() - target.float()) ** 2).reshape(target.shape[0], -1),
             dim=1,
         )
 
