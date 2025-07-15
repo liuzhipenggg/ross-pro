@@ -56,7 +56,7 @@ class RossSD3(nn.Module):
         self.logit_std = logit_std
         self.mode_scale = mode_scale
 
-     def get_sigmas(self, timesteps, n_dim=4, dtype=torch.float32, device):
+     def get_sigmas(self, timesteps, n_dim=4, dtype=torch.float32, device="cpu"):
         sigmas = self.noise_scheduler_copy.sigmas.to(device=device, dtype=dtype)
         schedule_timesteps = self.noise_scheduler_copy.timesteps.to(device)
         timesteps = timesteps.to(device)
@@ -87,7 +87,7 @@ class RossSD3(nn.Module):
 
         # Add noise according to flow matching.
         # zt = (1 - texp) * x + texp * z1
-        sigmas = get_sigmas(timesteps, n_dim=target.ndim, dtype=target.dtype, device=target.device)
+        sigmas = self.get_sigmas(timesteps, n_dim=target.ndim, dtype=target.dtype, device=target.device)
         noisy_model_input = (1.0 - sigmas) * target + sigmas * noise
 
         # Obtain hidden states
@@ -119,5 +119,5 @@ class RossSD3(nn.Module):
             (weighting.float() * (model_pred.float() - noise_target.float()) ** 2).reshape(noise_target.shape[0], -1),
             dim=1,
         )
-        
+
         return loss
