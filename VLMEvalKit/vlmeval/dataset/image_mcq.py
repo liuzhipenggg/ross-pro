@@ -2162,6 +2162,10 @@ class VLMBlind(ImageMCQDataset):
         result_df = pd.DataFrame(accuracy_dict)
         result_df['overall'] = result_df.mean(axis=1)
 
+        suffix = eval_file.split('.')[-1]
+        score_file = eval_file.replace(f'.{suffix}', '_acc.csv')
+        result_df.to_csv(score_file, index=False)
+
         return result_df
 
 
