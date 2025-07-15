@@ -4,6 +4,7 @@ import re
 
 from ross.model.multimodal_denoiser.denoiser_dit import RossDenoiser
 from ross.model.multimodal_denoiser.denoiser_sd import RossStableDiffusion
+from ross.model.multimodal_denoiser.denoiser_sd3 import RossSD3
 
 
 class IdentityMap(nn.Module):
@@ -108,6 +109,22 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             unet_path=unet_path,
             mlp_depth=mlp_depth,
             mlp_out=1024,
+            n_patches=config.image_embed_len,
+        )
+
+    elif projector_type.startswith("sd3_"):
+        transformer_path = config.mm_pixel_decoder.replace("/vae", "/transformer")
+        assert transformer_path.endswith("/transformer")
+
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sd3_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossSD3(
+            z_channel=config.hidden_size,
+            transformer_path=transformer_path,
+            mlp_depth=mlp_depth,
+            mlp_out=4096,
+            mlp_pooled=2048,
             n_patches=config.image_embed_len,
         )
 
