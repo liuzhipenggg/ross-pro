@@ -1208,6 +1208,9 @@ def train(attn_implementation="flash_attention_2"):
                     #                 p.requires_grad = True
                     #             for p in block.attn2.to_v.parameters():
                     #                 p.requires_grad = True
+                if hasattr(model.get_model().mm_inv_projector, "transformer"):
+                    for p in model.get_model().mm_inv_projector.transformer.parameters():
+                        p.requires_grad = False
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:
