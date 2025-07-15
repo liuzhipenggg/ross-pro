@@ -25,7 +25,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --output_dir ./checkpoints/$EXP_NAME \
     --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
     --version qwen_2 \
-    --mm_pixel_decoder /root/paddlejob/stable-diffusion-v1-4/vae \
+    --mm_pixel_decoder /root/paddlejob/stable-diffusion-3-medium-diffusers/vae \
     \
     --data_path /mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json \
     --image_folder /mnt/haochen/datasets/Cambrian-737K/Cambrian737k \
