@@ -17,6 +17,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --gradient_accumulation_steps 4 \
     --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
+    --mm_inv_projector_lr 1e-4 \
     \
     --deepspeed ./scripts/zero2.json \
     --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \

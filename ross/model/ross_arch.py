@@ -92,7 +92,8 @@ class RossMetaModel:
         self.config.image_embed_len = self.image_embed_len
         self.config.image_mean = self.vision_tower.image_processor.image_mean
         self.config.image_std = self.vision_tower.image_processor.image_std
-        self.config.decode_image_size = self.vision_tower.config.image_size // self.vision_tower.config.patch_size * 16  # 336 -> 384; 384 -> 432
+        # self.config.decode_image_size = self.vision_tower.config.image_size // self.vision_tower.config.patch_size * 16  # 336 -> 384; 384 -> 432
+        self.config.decode_image_size = 1024
 
         ### build CLIP-LLM projector
         self.config.use_mm_proj = True
@@ -148,7 +149,7 @@ class RossMetaModel:
                 def get_w(weights, keyword):
                     return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
 
-                self.mm_inv_projector.load_state_dict(get_w(mm_inv_projector_weights, 'mm_inv_projector'))
+                self.mm_inv_projector.load_state_dict(get_w(mm_inv_projector_weights, 'mm_inv_projector'), strict=False)
 
 
 def unpad_image(tensor, original_size):
