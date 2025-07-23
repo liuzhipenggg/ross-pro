@@ -92,8 +92,14 @@ class RossMetaModel:
         self.config.image_embed_len = self.image_embed_len
         self.config.image_mean = self.vision_tower.image_processor.image_mean
         self.config.image_std = self.vision_tower.image_processor.image_std
-        # self.config.decode_image_size = self.vision_tower.config.image_size // self.vision_tower.config.patch_size * 16  # 336 -> 384; 384 -> 432
-        self.config.decode_image_size = 1024
+        if "stable-diffusion-3-medium-diffusers" in self.config.mm_pixel_decoder:
+            self.config.decode_image_size = 1024
+        elif "stable-diffusion-2-1" in self.config.mm_pixel_decoder:
+            self.config.decode_image_size = 768
+        elif "stable-diffusion-v1-5" in self.config.mm_pixel_decoder:
+            self.config.decode_image_size = 512
+        else:
+            self.config.decode_image_size = self.vision_tower.config.image_size // self.vision_tower.config.patch_size * 16  # 336 -> 384; 384 -> 432
 
         ### build CLIP-LLM projector
         self.config.use_mm_proj = True
@@ -149,8 +155,9 @@ class RossMetaModel:
                 def get_w(weights, keyword):
                     return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
 
-                self.mm_inv_projector.load_state_dict(get_w(mm_inv_projector_weights, 'mm_inv_projector'), strict=False)
-
+                msg = self.mm_inv_projector.load_state_dict(get_w(mm_inv_projector_weights, 'mm_inv_projector'), strict=False)
+                print("missing keys in mm_inv_projector:", msg[0])
+                print("unexpected keys in mm_inv_projector:", msg[1])
 
 def unpad_image(tensor, original_size):
     """
