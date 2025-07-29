@@ -177,7 +177,7 @@ class RossStableDiffusion(nn.Module):
         sigmas=None,
         vae_scale_factor=8,
         guidance_scale=7.5,
-        do_classifier_free_guidance=False,
+        do_classifier_free_guidance=False,  # not supported, as training do not have cfg
     ):
         # Obtained from https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py
 

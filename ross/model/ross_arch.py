@@ -609,7 +609,7 @@ class RossMetaForCausalLM(ABC):
 
             latents = self.model.mm_inv_projector.inference(
                 image_hidden_states.float(),
-                num_inference_steps=100,
+                num_inference_steps=num_inference_steps,
                 timesteps=None,
                 sigmas=None,
                 vae_scale_factor=8,

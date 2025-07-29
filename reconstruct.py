@@ -130,16 +130,14 @@ def eval_model(args):
 
             hidden_states = outputs[0]
 
-            if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder:
-                pass
-            elif "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder:
-                # DDPM / DDIM inference here
+            if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder or "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder:
+                # DDPM / FlowMatching inference here
                 recon_img_tensor = model.inference_sd(
                     images=img_tensor,
                     hidden_states=hidden_states,
                     boi_ids=boi_ids,
                     eoi_ids=eoi_ids,
-                    num_inference_steps=1000,
+                    num_inference_steps=100,
                     guidance_scale=7.5,
                     do_classifier_free_guidance=False,
                 )
