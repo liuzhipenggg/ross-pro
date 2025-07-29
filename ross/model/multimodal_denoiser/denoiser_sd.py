@@ -29,6 +29,8 @@ class RossStableDiffusion(nn.Module):
         torch.nn.init.normal_(self.pos_embed, std=.02)
 
         self.unet = UNet2DConditionModel.from_pretrained(unet_path)
+        self.unet.train()
+        self.unet.requires_grad_(True)
         # self.unet.eval()
         # self.unet.requires_grad_(False)
 

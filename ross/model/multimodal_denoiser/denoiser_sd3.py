@@ -33,7 +33,7 @@ class RossSD3(nn.Module):
         torch.nn.init.normal_(self.pos_embed, std=.02)
 
         self.transformer = SD3Transformer2DModel.from_pretrained(transformer_path)
-        self.transformer.eval().cuda()
+        self.transformer.train().cuda()
         self.transformer.requires_grad_(True)
         # self.transformer.pos_embed.requires_grad_(True)
         # self.transformer.time_text_embed.requires_grad_(True)

@@ -546,7 +546,7 @@ class RossMetaForCausalLM(ABC):
 
         images_std = torch.tensor(self.config.image_std, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
         images_mean = torch.tensor(self.config.image_mean, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
-        images_vae = ((images.float() * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
+        images_vae = ((images * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
         images_vae = F.interpolate(images_vae, size=(self.config.decode_image_size, self.config.decode_image_size), mode='bilinear')
 
         with torch.no_grad():
