@@ -148,6 +148,9 @@ class SD3Transformer2DModel(
             embed_dim=self.inner_dim,
             pos_embed_max_size=pos_embed_max_size,  # hard-code for now.
         )
+        if hasattr(self.pos_embed, "pos_embed") and not isinstance(self.pos_embed.pos_embed, nn.Parameter):
+            self.pos_embed.pos_embed = nn.Parameter(self.pos_embed.pos_embed)
+            
         self.time_text_embed = CombinedTimestepTextProjEmbeddings(
             embedding_dim=self.inner_dim, pooled_projection_dim=pooled_projection_dim
         )

@@ -1415,6 +1415,8 @@ ross_series = {
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftcrossattn/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k-ftclip/checkpoint-5755")
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-sft737k-ftclip-ftsd/checkpoint-5755"),
 }
 
 ursa_series = {

@@ -34,10 +34,10 @@ class RossSD3(nn.Module):
 
         self.transformer = SD3Transformer2DModel.from_pretrained(transformer_path)
         self.transformer.eval().cuda()
-        self.transformer.requires_grad_(False)
-        self.transformer.pos_embed.requires_grad_(True)
-        self.transformer.time_text_embed.requires_grad_(True)
-        self.transformer.context_embedder.requires_grad_(True)
+        self.transformer.requires_grad_(True)
+        # self.transformer.pos_embed.requires_grad_(True)
+        # self.transformer.time_text_embed.requires_grad_(True)
+        # self.transformer.context_embedder.requires_grad_(True)
 
         mlp_modules = [nn.Linear(z_channel, mlp_out)]
         for _ in range(1, mlp_depth):

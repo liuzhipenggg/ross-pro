@@ -49,6 +49,10 @@ class RossMetaModel:
         if hasattr(config, "mm_vision_tower"):
             self.vision_tower = build_vision_tower(config, delay_load=False)
             self.mm_projector = build_vision_projector(config)
+            if hasattr(config, "mm_pixel_decoder"):
+                self.pixel_decoder = build_pixel_decoder(config)
+                self.mm_inv_projector = build_inv_projector(config)
+                self.image_embed_len = (self.vision_tower.config.image_size // self.vision_tower.config.patch_size) ** 2
 
             if 'unpad' in getattr(config, 'mm_patch_merge_type', ''):
                 self.image_newline = nn.Parameter(
@@ -542,11 +546,11 @@ class RossMetaForCausalLM(ABC):
 
         images_std = torch.tensor(self.config.image_std, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
         images_mean = torch.tensor(self.config.image_mean, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
-        images_vae = ((images * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
+        images_vae = ((images.float() * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
         images_vae = F.interpolate(images_vae, size=(self.config.decode_image_size, self.config.decode_image_size), mode='bilinear')
 
         with torch.no_grad():
-            posterior = self.model.pixel_decoder.encode(images_vae).latent_dist
+            posterior = self.model.pixel_decoder.encode(images_vae.cuda()).latent_dist
             z_q = (posterior.sample() - self.model.pixel_decoder.shift_factor) * self.model.pixel_decoder.scaling_factor
             # group each (2x2) window
             # z_q = z_q.unfold(2, 2, 2).unfold(3, 2, 2)
@@ -562,6 +566,61 @@ class RossMetaForCausalLM(ABC):
         vm_loss_mask = vm_loss_mask.repeat(4)
         vm_loss = (vm_loss.view(batch_size, -1).mean() * vm_loss_mask).sum() / (vm_loss_mask.sum() + eps)
         return vm_loss
+    
+    @torch.no_grad()
+    def inference_sd(
+        self,
+        images: torch.Tensor,
+        hidden_states: torch.Tensor,
+        boi_ids: torch.Tensor,
+        eoi_ids: torch.Tensor,
+        eps: float = 1e-6,
+        num_inference_steps: int = 100,
+        guidance_scale: float = 7.5,
+        do_classifier_free_guidance: bool = True,
+    ):
+        batch_size = hidden_states.shape[0]
+        vm_loss_mask = torch.zeros((batch_size,), device=hidden_states.device).bool()
+        image_hidden_states = torch.zeros((batch_size, self.model.image_embed_len, hidden_states.shape[-1]),
+                                          dtype=hidden_states.dtype,
+                                          device=hidden_states.device)
+
+        for batch_index, (cur_boi_id, cur_eoi_id, cur_hidden_state) in enumerate(zip(boi_ids, eoi_ids, hidden_states)):
+            if (cur_boi_id is not None) and (cur_eoi_id is not None):
+                assert cur_eoi_id - cur_boi_id + 1 == self.model.image_embed_len
+                assert cur_hidden_state.shape[0] >= cur_eoi_id
+                image_hidden_states[batch_index] = cur_hidden_state[cur_boi_id: cur_eoi_id + 1]
+                vm_loss_mask[batch_index] = True
+
+        images_std = torch.tensor(self.config.image_std, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
+        images_mean = torch.tensor(self.config.image_mean, device=images.device, dtype=images.dtype).view(1, -1, 1, 1)
+        images_vae = ((images.float() * images_std + images_mean - 0.5) / 0.5).clamp(-1., 1.)
+        images_vae = F.interpolate(images_vae, size=(self.config.decode_image_size, self.config.decode_image_size), mode='bilinear')
+
+        with torch.no_grad():
+            posterior = self.model.pixel_decoder.encode(images_vae.cuda()).latent_dist
+            z_q = (posterior.sample() - self.model.pixel_decoder.shift_factor) * self.model.pixel_decoder.scaling_factor
+
+        with torch.amp.autocast('cuda', dtype=torch.float32):
+            image_hidden_states = self.model.mm_inv_projector.ln_pre(
+                image_hidden_states) + self.model.mm_inv_projector.pos_embed
+            h = w = int(image_hidden_states.shape[1] ** 0.5)
+            image_hidden_states = rearrange(image_hidden_states, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
+
+            latents = self.model.mm_inv_projector.inference(
+                image_hidden_states.float(),
+                num_inference_steps=100,
+                timesteps=None,
+                sigmas=None,
+                vae_scale_factor=8,
+                guidance_scale=guidance_scale,
+                do_classifier_free_guidance=do_classifier_free_guidance,
+            )
+
+            latents = latents / self.model.pixel_decoder.scaling_factor + self.model.pixel_decoder.shift_factor
+            recon_img_tensor = self.model.pixel_decoder.decode(latents)[0]
+        
+        return recon_img_tensor
 
 
 @dataclass
