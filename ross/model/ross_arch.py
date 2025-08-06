@@ -51,6 +51,7 @@ class RossMetaModel:
             self.mm_projector = build_vision_projector(config)
             if hasattr(config, "mm_pixel_decoder"):
                 self.pixel_decoder = build_pixel_decoder(config)
+                print("=> building mm_inv_projector ...")
                 self.mm_inv_projector = build_inv_projector(config)
                 self.image_embed_len = (self.vision_tower.config.image_size // self.vision_tower.config.patch_size) ** 2
 
