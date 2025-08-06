@@ -80,6 +80,7 @@ class RossMetaModel:
         self.config.mm_pixel_decoder = mm_pixel_decoder
 
         if self.get_vision_tower() is None:
+            print("=> vision_tower is None, building now ...")
             vision_tower = build_vision_tower(model_args)
 
             if fsdp is not None and len(fsdp) > 0:

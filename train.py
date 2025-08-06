@@ -46,7 +46,8 @@ from ross.ross_trainer import RossTrainer
 
 from ross import conversation as conversation_lib
 from ross.model import *
-from ross.mm_utils import tokenizer_image_token
+from ross.model.builder import load_pretrained_model
+from ross.mm_utils import tokenizer_image_token, get_model_name_from_path
 
 from PIL import Image
 from PIL import ImageFile
@@ -68,6 +69,7 @@ IS_TOKENIZER_GREATER_THAN_0_14 = version.parse(tokenizers.__version__) >= versio
 @dataclass
 class ModelArguments:
     model_name_or_path: Optional[str] = field(default="facebook/opt-125m")
+    load_ross_pretrained: Optional[bool] = field(default=False)
     version: Optional[str] = field(default="v0")
     freeze_backbone: bool = field(default=False)
     tune_mm_mlp_adapter: bool = field(default=False)
@@ -1080,24 +1082,34 @@ def train(attn_implementation="flash_attention_2"):
             )
         ))
 
-    if 'Qwen2' in model_args.model_name_or_path:
-        model = RossQwen2ForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            cache_dir=training_args.cache_dir,
-            attn_implementation=attn_implementation,
-            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-            **bnb_model_from_pretrained_args
-        )
-    elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
-        model = RossLlamaForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            cache_dir=training_args.cache_dir,
-            attn_implementation=attn_implementation,
-            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-            **bnb_model_from_pretrained_args
-        )
+    if not model_args.load_ross_pretrained:
+        if 'Qwen2' in model_args.model_name_or_path:
+            model = RossQwen2ForCausalLM.from_pretrained(
+                model_args.model_name_or_path,
+                cache_dir=training_args.cache_dir,
+                attn_implementation=attn_implementation,
+                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+                **bnb_model_from_pretrained_args
+            )
+        elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
+            model = RossLlamaForCausalLM.from_pretrained(
+                model_args.model_name_or_path,
+                cache_dir=training_args.cache_dir,
+                attn_implementation=attn_implementation,
+                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+                **bnb_model_from_pretrained_args
+            )
+        else:
+            raise NotImplementedError
     else:
-        raise NotImplementedError
+        model_name = get_model_name_from_path(model_path)
+        tokenizer, model, image_processor, context_len = load_pretrained_model(
+            model_args.model_name_or_path, 
+            None, 
+            model_name,
+            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+            **bnb_model_from_pretrained_args,
+        )
 
     model.config.use_cache = False
 
