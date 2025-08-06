@@ -1102,7 +1102,7 @@ def train(attn_implementation="flash_attention_2"):
     model.config.use_cache = False
 
     if model_args.freeze_backbone:
-        model.model.requires_grad_(False)
+        model.requires_grad_(False)
 
     if training_args.bits in [4, 8]:
         from peft import prepare_model_for_kbit_training
@@ -1225,7 +1225,11 @@ def train(attn_implementation="flash_attention_2"):
                         module = module.to(torch.bfloat16)
 
     total_params = sum(p.ds_numel if hasattr(p, "ds_numel") else p.numel() for p in model.parameters())
-    train_params = sum(p.ds_numel if hasattr(p, "ds_numel") else p.numel() if p.requires_grad else 0 for p in model.parameters())
+    train_params = sum(
+        (p.ds_numel if hasattr(p, "ds_numel") else p.numel()) 
+        if p.requires_grad else 0 
+        for p in model.parameters()
+    )
     print(f">> Total params: {total_params / 1.e6}M")
     print(f">> Train params: {train_params / 1.e6}M, Ratio {train_params / total_params * 100.:.2f}%")
     print(f">> Save every {training_args.save_steps} steps.")
