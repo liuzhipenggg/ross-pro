@@ -1179,38 +1179,12 @@ def train(attn_implementation="flash_attention_2"):
             if hasattr(model.get_model(), "mm_inv_projector"):
                 for p in model.get_model().mm_inv_projector.parameters():
                     p.requires_grad = True
-                if hasattr(model.get_model().mm_inv_projector, "unet"):
-                    for p in model.get_model().mm_inv_projector.unet.parameters():
-                        p.requires_grad = False
-                    
-                    # from diffusers.models.unets.unet_2d_blocks import CrossAttnUpBlock2D, CrossAttnDownBlock2D, UNetMidBlock2DCrossAttn
-                    # # tune CrossAttn layers (for SD-1.4 and SD-1.5)
-                    # for blk in model.get_model().mm_inv_projector.unet.up_blocks:
-                    #     if isinstance(blk, CrossAttnUpBlock2D):
-                    #         for layer in blk.attentions:
-                    #             for block in layer.transformer_blocks:
-                    #                 for p in block.attn2.to_k.parameters():
-                    #                     p.requires_grad = True
-                    #                 for p in block.attn2.to_v.parameters():
-                    #                     p.requires_grad = True
-                    # for blk in model.get_model().mm_inv_projector.unet.down_blocks:
-                    #     if isinstance(blk, CrossAttnDownBlock2D):
-                    #         for layer in blk.attentions:
-                    #             for block in layer.transformer_blocks:
-                    #                 for p in block.attn2.to_k.parameters():
-                    #                     p.requires_grad = True
-                    #                 for p in block.attn2.to_v.parameters():
-                    #                     p.requires_grad = True
-                    # if isinstance(model.get_model().mm_inv_projector.unet.mid_block, UNetMidBlock2DCrossAttn):
-                    #     for layer in model.get_model().mm_inv_projector.unet.mid_block.attentions:
-                    #         for block in layer.transformer_blocks:
-                    #             for p in block.attn2.to_k.parameters():
-                    #                 p.requires_grad = True
-                    #             for p in block.attn2.to_v.parameters():
-                    #                 p.requires_grad = True
-                if hasattr(model.get_model().mm_inv_projector, "transformer"):
-                    for p in model.get_model().mm_inv_projector.transformer.parameters():
-                        p.requires_grad = False
+                # if hasattr(model.get_model().mm_inv_projector, "unet"):
+                #     for p in model.get_model().mm_inv_projector.unet.parameters():
+                #         p.requires_grad = False
+                # if hasattr(model.get_model().mm_inv_projector, "transformer"):
+                #     for p in model.get_model().mm_inv_projector.transformer.parameters():
+                #         p.requires_grad = False
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:

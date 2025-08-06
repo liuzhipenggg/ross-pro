@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-ftcrossattn"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-ftsd"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -17,11 +17,12 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --gradient_accumulation_steps 4 \
     --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
+    --mm_inv_projector_lr 1e-4 \
     \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path /mnt/haochen/hf_home/Qwen2-7B-Instruct \
+    --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
     --output_dir ./checkpoints/$EXP_NAME \
-    --vision_tower /mnt/haochen/hf_home/siglip-so400m-patch14-384 \
+    --vision_tower /root/paddlejob/siglip-so400m-patch14-384 \
     --version plain \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-2-1/vae \
     \
