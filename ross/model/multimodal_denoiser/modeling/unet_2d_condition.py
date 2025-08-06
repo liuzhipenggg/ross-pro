@@ -1051,6 +1051,7 @@ class UNet2DConditionModel(
         down_intrablock_additional_residuals: Optional[Tuple[torch.Tensor]] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         return_dict: bool = True,
+        z: Optional[torch.Tensor] = None,
     ) -> Union[UNet2DConditionOutput, Tuple]:
         r"""
         The [`UNet2DConditionModel`] forward method.
@@ -1167,6 +1168,8 @@ class UNet2DConditionModel(
 
         # 2. pre-process
         sample = self.conv_in(sample)   # [bsz, 320, H//8, W//8]
+        if z is not None:
+            sample = sample + z
 
         # 2.5 GLIGEN position net
         if cross_attention_kwargs is not None and cross_attention_kwargs.get("gligen", None) is not None:

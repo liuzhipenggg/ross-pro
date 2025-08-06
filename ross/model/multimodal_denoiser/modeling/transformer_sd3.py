@@ -327,6 +327,7 @@ class SD3Transformer2DModel(
         joint_attention_kwargs: Optional[Dict[str, Any]] = None,
         return_dict: bool = True,
         skip_layers: Optional[List[int]] = None,
+        z: Optional[torch.Tensor] = None,
     ) -> Union[torch.Tensor, Transformer2DModelOutput]:
         """
         The [`SD3Transformer2DModel`] forward method.
@@ -374,6 +375,8 @@ class SD3Transformer2DModel(
         height, width = hidden_states.shape[-2:]
 
         hidden_states = self.pos_embed(hidden_states)  # takes care of adding positional embeddings too.
+        if z is not None:
+            hidden_states = hidden_states + z
         temb = self.time_text_embed(timestep, pooled_projections)
         encoder_hidden_states = self.context_embedder(encoder_hidden_states)
 
