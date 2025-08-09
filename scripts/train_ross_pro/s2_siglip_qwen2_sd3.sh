@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ct558k-ftclip-ftsd"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ct558k-ftsd"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -13,13 +13,11 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --master_addr="localhost" --master_port="29805" \
     \
     train.py \
-    --per_device_train_batch_size 4 \
+    --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 4 \
-    --learning_rate 2e-5 \
+    --learning_rate 1e-4 \
     --warmup_ratio 0.03 \
-    --freeze_backbone True \
-    --unfreeze_mm_vision_tower \
-    --mm_vision_tower_lr 2e-6 \
+    --mm_inv_projector_lr 1e-5 \
     \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
@@ -34,6 +32,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --image_folder /mnt/haochen/datasets/LLaVA-Pretrain \
     \
     --mm_projector_type mlp2x_gelu \
+    --tune_mm_mlp_adapter True \
     --mm_inv_projector_type sd3_mlp2x \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \

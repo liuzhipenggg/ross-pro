@@ -162,7 +162,7 @@ class RossSD3XOmni(nn.Module):
 
     def inference(
         self, 
-        prompt_embeds,
+        z,
         num_inference_steps=100,
         timesteps=None,
         sigmas=None,
@@ -173,8 +173,11 @@ class RossSD3XOmni(nn.Module):
         # Obtained from https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion_3/pipeline_stable_diffusion_3.py
         
         # 0. Obtain hidden states
-        pooled_prompt_embeds = self.mlp_pooled(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous()).mean(1)
-        prompt_embeds = self.mlp(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous())
+        # pooled_prompt_embeds = self.mlp_pooled(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous()).mean(1)
+        # prompt_embeds = self.mlp(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous())
+        bsz = z.shape[0]
+        prompt_embeds = torch.load(self.negative_prompt_path).to(z.device).to(z.dtype).repeat(bsz, 1, 1)
+        pooled_prompt_embeds = torch.load(self.negative_pooled_prompt_path).to(z.device).to(z.dtype).repeat(bsz, 1)
 
         assert not do_classifier_free_guidance, "Classifier Free Guidance is currently unsupported!"
 
@@ -193,6 +196,11 @@ class RossSD3XOmni(nn.Module):
             generator=None,
             latents=None,
         )
+
+        # interpolate LMM outputs
+        if self.transformer.config.sample_size != self.transformer.config.sample_size or z_w != z.shape[3]:
+            z = F.interpolate(z, size=(self.transformer.config.sample_size, self.transformer.config.sample_size), mode='bilinear')
+        z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
 
         # 5. Prepare timesteps
         scheduler_kwargs = {}
@@ -234,6 +242,7 @@ class RossSD3XOmni(nn.Module):
                     pooled_projections=pooled_prompt_embeds,
                     # joint_attention_kwargs=self.joint_attention_kwargs,
                     return_dict=False,
+                    z=self.factor * z,
                 )[0]
 
                 # compute the previous noisy sample x_t -> x_t-1

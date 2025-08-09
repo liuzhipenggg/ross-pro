@@ -24,7 +24,18 @@ from ross.model import *
 from ross.constants import DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
 
 
-def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, load_4bit=False, device_map="auto", device="cuda", use_flash_attn=False, **kwargs):
+def load_pretrained_model(
+    model_path, 
+    model_base, 
+    model_name, 
+    load_8bit=False, 
+    load_4bit=False, 
+    device_map="auto", 
+    device="cuda", 
+    use_flash_attn=False, 
+    zero3=False,
+    **kwargs,
+):
     kwargs = {"device_map": device_map, **kwargs}
 
     if device != "cuda":
@@ -48,13 +59,23 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
 
     if 'qwen2' in model_name.lower():
         print(f'=> loading RossQwen2ForCausalLM ...')
-        tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
-        model = RossQwen2ForCausalLM.from_pretrained(
-            model_path,
-            low_cpu_mem_usage=True,
-            ignore_mismatched_sizes=True,
-            **kwargs
-        )
+        if zero3:
+            kwargs.pop("device_map")
+            tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+            model = RossQwen2ForCausalLM.from_pretrained(
+                model_path,
+                # low_cpu_mem_usage=True,
+                ignore_mismatched_sizes=True,
+                **kwargs
+            )
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+            model = RossQwen2ForCausalLM.from_pretrained(
+                model_path,
+                low_cpu_mem_usage=True,
+                ignore_mismatched_sizes=True,
+                **kwargs
+            )
     else:
         print(f'=> loading RossLlamaForCausalLM ...')
         tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)

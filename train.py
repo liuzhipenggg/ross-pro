@@ -1082,34 +1082,54 @@ def train(attn_implementation="flash_attention_2"):
             )
         ))
 
-    if not model_args.load_ross_pretrained:
-        if 'Qwen2' in model_args.model_name_or_path:
-            model = RossQwen2ForCausalLM.from_pretrained(
-                model_args.model_name_or_path,
-                cache_dir=training_args.cache_dir,
-                attn_implementation=attn_implementation,
-                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-                **bnb_model_from_pretrained_args
-            )
-        elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
-            model = RossLlamaForCausalLM.from_pretrained(
-                model_args.model_name_or_path,
-                cache_dir=training_args.cache_dir,
-                attn_implementation=attn_implementation,
-                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-                **bnb_model_from_pretrained_args
-            )
-        else:
-            raise NotImplementedError
-    else:
-        model_name = get_model_name_from_path(model_path)
-        tokenizer, model, image_processor, context_len = load_pretrained_model(
-            model_args.model_name_or_path, 
-            None, 
-            model_name,
+    # if not model_args.load_ross_pretrained:
+    #     if 'Qwen2' in model_args.model_name_or_path:
+    #         model = RossQwen2ForCausalLM.from_pretrained(
+    #             model_args.model_name_or_path,
+    #             cache_dir=training_args.cache_dir,
+    #             attn_implementation=attn_implementation,
+    #             torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+    #             **bnb_model_from_pretrained_args
+    #         )
+    #     elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
+    #         model = RossLlamaForCausalLM.from_pretrained(
+    #             model_args.model_name_or_path,
+    #             cache_dir=training_args.cache_dir,
+    #             attn_implementation=attn_implementation,
+    #             torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+    #             **bnb_model_from_pretrained_args
+    #         )
+    #     else:
+    #         raise NotImplementedError
+    # else:
+    #     model_name = get_model_name_from_path(model_args.model_name_or_path)
+    #     tokenizer, model, image_processor, context_len = load_pretrained_model(
+    #         model_args.model_name_or_path, 
+    #         None, 
+    #         model_name,
+    #         torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+    #         zero3=True,
+    #         **bnb_model_from_pretrained_args,
+    #     )
+
+    if 'qwen2' in model_args.model_name_or_path.lower():
+        model = RossQwen2ForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            attn_implementation=attn_implementation,
             torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-            **bnb_model_from_pretrained_args,
+            **bnb_model_from_pretrained_args
         )
+    elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
+        model = RossLlamaForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            attn_implementation=attn_implementation,
+            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+            **bnb_model_from_pretrained_args
+        )
+    else:
+        raise NotImplementedError
 
     model.config.use_cache = False
 
@@ -1191,12 +1211,15 @@ def train(attn_implementation="flash_attention_2"):
             if hasattr(model.get_model(), "mm_inv_projector"):
                 for p in model.get_model().mm_inv_projector.parameters():
                     p.requires_grad = True
-                # if hasattr(model.get_model().mm_inv_projector, "unet"):
-                #     for p in model.get_model().mm_inv_projector.unet.parameters():
-                #         p.requires_grad = False
+                if hasattr(model.get_model().mm_inv_projector, "unet"):
+                    for p in model.get_model().mm_inv_projector.unet.parameters():
+                        p.requires_grad = False
+                    model.get_model().mm_inv_projector.unet.conv_in.requires_grad_(True)
                 # if hasattr(model.get_model().mm_inv_projector, "transformer"):
                 #     for p in model.get_model().mm_inv_projector.transformer.parameters():
                 #         p.requires_grad = False
+                #     model.get_model().mm_inv_projector.transformer.pos_embed.requires_grad_(True)
+                model.get_model().mm_inv_projector.factor.requires_grad_(True)
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:

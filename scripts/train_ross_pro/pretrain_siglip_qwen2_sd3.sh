@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -13,11 +13,11 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --master_addr="localhost" --master_port="29815" \
     \
     train.py \
-    --per_device_train_batch_size 1 \
+    --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 4 \
     --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
-    --mm_inv_projector_lr 1e-4 \
+    --mm_inv_projector_lr 1e-5 \
     \
     --deepspeed ./scripts/zero2.json \
     --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \

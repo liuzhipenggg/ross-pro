@@ -30,11 +30,11 @@ class RossStableDiffusionXOmni(nn.Module):
         self.negative_prompt_path = negative_prompt_path
 
         self.unet = UNet2DConditionModel.from_pretrained(unet_path)
-        # self.unet.train()
-        # self.unet.requires_grad_(True)
-        self.unet.eval()
-        self.unet.requires_grad_(False)
-        self.unet.conv_in.requires_grad_(True)
+        self.unet.train()
+        self.unet.requires_grad_(True)
+        # self.unet.eval()
+        # self.unet.requires_grad_(False)
+        # self.unet.conv_in.requires_grad_(True)
 
         mlp_out = self.unet.config.block_out_channels[0]
         mlp_modules = [nn.Linear(z_channel, mlp_out)]
@@ -163,7 +163,7 @@ class RossStableDiffusionXOmni(nn.Module):
 
     def inference(
         self, 
-        prompt_embeds,
+        z,
         num_inference_steps=100,
         timesteps=None,
         sigmas=None,
@@ -174,7 +174,8 @@ class RossStableDiffusionXOmni(nn.Module):
         # Obtained from https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py
 
         # 0. Obtain hidden states
-        prompt_embeds = self.mlp(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous())
+        # 0.1 Negative prompt embeddings
+        prompt_embeds = torch.load(self.negative_prompt_path).to(z.device).to(z.dtype).repeat(z.shape[0], 1, 1)
 
         # 4. Prepare timesteps
         timesteps, num_inference_steps = retrieve_timesteps(
@@ -196,6 +197,13 @@ class RossStableDiffusionXOmni(nn.Module):
             generator=None,
             latents=None,
         )
+
+        # 6 LMM outputs
+        if z.shape[2] != self.unet.config.sample_size or z.shape[3] != self.unet.config.sample_size:
+            z = F.interpolate(z, size=(self.unet.config.sample_size, self.unet.config.sample_size), mode="bilinear").contiguous()
+        _, _, z_h, z_w = z.shape
+        z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
+        z = rearrange(z, "b (h w) c -> b c h w", h=z_h, w=z_w).contiguous()
 
         # 6.2 Optionally get Guidance Scale Embedding
         timestep_cond = None
@@ -221,6 +229,7 @@ class RossStableDiffusionXOmni(nn.Module):
                     encoder_hidden_states=prompt_embeds,
                     timestep_cond=timestep_cond,
                     return_dict=False,
+                    z=self.factor * z,
                 )[0]
 
                 # perform guidance
