@@ -198,8 +198,9 @@ class RossSD3XOmni(nn.Module):
         )
 
         # interpolate LMM outputs
-        if self.transformer.config.sample_size != self.transformer.config.sample_size or z_w != z.shape[3]:
-            z = F.interpolate(z, size=(self.transformer.config.sample_size, self.transformer.config.sample_size), mode='bilinear')
+        z_w = z_h = self.transformer.config.sample_size // self.transformer.config.patch_size
+        if z_h != z.shape[2] or z_w != z.shape[3]:
+            z = F.interpolate(z, size=(z_h, z_w), mode='bilinear')
         z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
 
         # 5. Prepare timesteps
