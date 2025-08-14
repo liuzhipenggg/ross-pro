@@ -7,6 +7,8 @@ from ross.model.multimodal_denoiser.denoiser_sd import RossStableDiffusion
 from ross.model.multimodal_denoiser.denoiser_sd_xomni import RossStableDiffusionXOmni
 from ross.model.multimodal_denoiser.denoiser_sd3 import RossSD3
 from ross.model.multimodal_denoiser.denoiser_sd3_xomni import RossSD3XOmni
+from ross.model.multimodal_denoiser.denoiser_sdxl import RossStableDiffusionXL
+from ross.model.multimodal_denoiser.denoiser_sdxl_xomni import RossStableDiffusionXLXOmni
 
 
 class IdentityMap(nn.Module):
@@ -190,6 +192,38 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             n_patches=config.image_embed_len,
             negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd3.pt",
             negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd3.pt",
+        )
+    
+    elif projector_type.startswith("sdxl_"):
+        unet_path = config.mm_pixel_decoder.replace("/vae", "/unet")
+        assert unet_path.endswith("/unet")
+
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sdxl_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossStableDiffusionXL(
+            z_channel=config.hidden_size,
+            unet_path=unet_path,
+            mlp_depth=mlp_depth,
+            mlp_out=2048,
+            mlp_pooled=1280,
+            n_patches=config.image_embed_len,
+        )
+    
+    elif projector_type.startswith("sdxlxomni_"):
+        unet_path = config.mm_pixel_decoder.replace("/vae", "/unet")
+        assert unet_path.endswith("/unet")
+
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sdxlxomni_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossStableDiffusionXLXOmni(
+            z_channel=config.hidden_size,
+            unet_path=unet_path,
+            mlp_depth=mlp_depth,
+            n_patches=config.image_embed_len,
+            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sdxl.pt",
+            negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sdxl.pt",
         )
 
     raise ValueError(f'Unknown projector type: {projector_type}')

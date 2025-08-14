@@ -19,7 +19,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --warmup_ratio 0.03 \
     --mm_inv_projector_lr 1e-5 \
     \
-    --deepspeed ./scripts/zero3.json \
+    --deepspeed ./scripts/zero2.json \
     --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
     --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k/mm_projector.bin \
     --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k/mm_inv_projector.bin \
@@ -59,4 +59,5 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --run_name $EXP_NAME
 
 mkdir /mnt/haochen/ross-pro-ckpt/$EXP_NAME
-rsync -ah --progress ./checkpoints/$EXP_NAME/checkpoint-4355/* /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+rsync -ah --progress ./checkpoints/$EXP_NAME/* /mnt/haochen/ross-pro-ckpt/$EXP_NAME

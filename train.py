@@ -1215,11 +1215,12 @@ def train(attn_implementation="flash_attention_2"):
                     for p in model.get_model().mm_inv_projector.unet.parameters():
                         p.requires_grad = False
                     model.get_model().mm_inv_projector.unet.conv_in.requires_grad_(True)
-                # if hasattr(model.get_model().mm_inv_projector, "transformer"):
-                #     for p in model.get_model().mm_inv_projector.transformer.parameters():
-                #         p.requires_grad = False
-                #     model.get_model().mm_inv_projector.transformer.pos_embed.requires_grad_(True)
-                model.get_model().mm_inv_projector.factor.requires_grad_(True)
+                if hasattr(model.get_model().mm_inv_projector, "transformer"):
+                    for p in model.get_model().mm_inv_projector.transformer.parameters():
+                        p.requires_grad = False
+                    model.get_model().mm_inv_projector.transformer.pos_embed.requires_grad_(True)
+                if hasattr(model.get_model().mm_inv_projector, "factor"):
+                    model.get_model().mm_inv_projector.factor.requires_grad_(True)
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:
