@@ -193,6 +193,38 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd3.pt",
             negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd3.pt",
         )
+
+    elif projector_type.startswith("sd35_"):
+        transformer_path = config.mm_pixel_decoder.replace("/vae", "/transformer")
+        assert transformer_path.endswith("/transformer")
+
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sd35_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossSD3(
+            z_channel=config.hidden_size,
+            transformer_path=transformer_path,
+            mlp_depth=mlp_depth,
+            mlp_out=4096,
+            mlp_pooled=2048,
+            n_patches=config.image_embed_len,
+        )
+
+    elif projector_type.startswith("sd35xomni_"):
+        transformer_path = config.mm_pixel_decoder.replace("/vae", "/transformer")
+        assert transformer_path.endswith("/transformer")
+
+        mlp_gelu_match = re.match(r'^mlp(\d+)x$', projector_type.replace("sd35xomni_", ""))
+        mlp_depth = int(mlp_gelu_match.group(1)) if mlp_gelu_match else 1
+
+        return RossSD3XOmni(
+            z_channel=config.hidden_size,
+            transformer_path=transformer_path,
+            mlp_depth=mlp_depth,
+            n_patches=config.image_embed_len,
+            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd35.pt",
+            negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd35.pt",
+        )
     
     elif projector_type.startswith("sdxl_"):
         unet_path = config.mm_pixel_decoder.replace("/vae", "/unet")

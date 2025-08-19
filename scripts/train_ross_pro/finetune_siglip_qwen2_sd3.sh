@@ -4,7 +4,9 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd"
+# EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd"
+EXP_NAME="DEBUG"
+# EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-hf"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -40,7 +42,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --num_train_epochs 1 \
+    --num_train_epochs 10 \
     --per_device_eval_batch_size 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
