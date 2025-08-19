@@ -202,6 +202,7 @@ class RossStableDiffusionXLXOmni(nn.Module):
         # 0. Obtain hidden states
         # 0.1 Negative prompt embeddings
         prompt_embeds = torch.load(self.negative_prompt_path).to(z.device).to(z.dtype).repeat(z.shape[0], 1, 1)
+        pooled_prompt_embeds = torch.load(self.negative_pooled_prompt_path).to(z.device).to(z.dtype).repeat(z.shape[0], 1)
 
         # 4. Prepare timesteps
         timesteps, num_inference_steps = retrieve_timesteps(
@@ -231,6 +232,19 @@ class RossStableDiffusionXLXOmni(nn.Module):
         z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
         z = rearrange(z, "b (h w) c -> b c h w", h=z_h, w=z_w).contiguous()
 
+        # time ids
+        add_time_ids = torch.cat(
+            [
+                compute_time_ids(original_size=(1024, 1024), crops_coords_top_left=(0, 0))
+                for _ in range(z.shape[0])
+            ]
+        ).to(z.device).to(z.dtype)
+
+        unet_added_conditions = {
+            "time_ids": add_time_ids,
+            "text_embeds": pooled_prompt_embeds,
+        }
+
         # 6.2 Optionally get Guidance Scale Embedding
         timestep_cond = None
         if self.unet.config.time_cond_proj_dim is not None:
@@ -256,6 +270,7 @@ class RossStableDiffusionXLXOmni(nn.Module):
                     timestep_cond=timestep_cond,
                     return_dict=False,
                     z=self.factor * z,
+                    added_cond_kwargs=unet_added_conditions,
                 )[0]
 
                 # perform guidance

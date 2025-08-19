@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sdxl-kl8-mlp2x-pt558k-xomni"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sdxl-kl8-mlp2x-pt558k"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -31,7 +31,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
-    --mm_inv_projector_type sdxlxomni_mlp2x \
+    --mm_inv_projector_type sdxl_mlp2x \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \

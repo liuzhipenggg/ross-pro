@@ -205,7 +205,7 @@ class RossStableDiffusionXL(nn.Module):
 
     def inference(
         self, 
-        prompt_embeds,
+        z,
         num_inference_steps=100,
         timesteps=None,
         sigmas=None,
@@ -216,7 +216,21 @@ class RossStableDiffusionXL(nn.Module):
         # Obtained from https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py
 
         # 0. Obtain hidden states
-        prompt_embeds = self.mlp(rearrange(prompt_embeds, "b c h w -> b (h w) c").contiguous())
+        prompt_embeds = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
+        pooled_projections = self.mlp_pooled(rearrange(z, "b c h w -> b (h w) c").contiguous()).mean(1)
+
+        # time ids
+        add_time_ids = torch.cat(
+            [
+                compute_time_ids(original_size=(1024, 1024), crops_coords_top_left=(0, 0))
+                for _ in range(z.shape[0])
+            ]
+        ).to(z.device).to(z.dtype)
+
+        unet_added_conditions = {
+            "time_ids": add_time_ids,
+            "text_embeds": pooled_projections,
+        }
 
         # 4. Prepare timesteps
         timesteps, num_inference_steps = retrieve_timesteps(
@@ -263,6 +277,7 @@ class RossStableDiffusionXL(nn.Module):
                     encoder_hidden_states=prompt_embeds,
                     timestep_cond=timestep_cond,
                     return_dict=False,
+                    added_cond_kwargs=unet_added_conditions,
                 )[0]
 
                 # perform guidance
