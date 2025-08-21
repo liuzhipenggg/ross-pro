@@ -927,8 +927,12 @@ class LazySupervisedDataset(Dataset):
                  tokenizer: transformers.PreTrainedTokenizer,
                  data_args: DataArguments):
         super(LazySupervisedDataset, self).__init__()
-        with megfile.smart_open(data_path, "r", encoding="utf-8") as file:
-            list_data_dict = json.load(file)
+        if data_path.endswith(".json"):
+            with megfile.smart_open(data_path, "r", encoding="utf-8") as file:
+                list_data_dict = json.load(file)
+        else:
+            from datasets import load_from_disk
+            list_data_dict = load_from_disk(data_path)
 
         rank0_print("Formatting inputs...Skip in lazy mode")
         self.tokenizer = tokenizer
@@ -964,8 +968,11 @@ class LazySupervisedDataset(Dataset):
             image_file = self.list_data_dict[i]['image']
             image_folder = self.data_args.image_folder
             processor = self.data_args.image_processor
-            with megfile.smart_open(os.path.join(image_folder, image_file), "rb") as f:
-                bytes_data = f.read()
+            try:
+                bytes_data = base64.b64decode(image_file)
+            except:
+                with megfile.smart_open(os.path.join(image_folder, image_file), "rb") as f:
+                    bytes_data = f.read()
             image = Image.open(io.BytesIO(bytes_data), 'r').convert('RGB')
             if self.data_args.image_aspect_ratio == 'pad':
                 def expand2square(pil_img, background_color):
