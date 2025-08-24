@@ -1,8 +1,11 @@
-from datasets import load_dataset, load_from_disk
+from datasets import load_dataset, load_from_disk, Dataset
 import base64
+import json
 import io
 import os
 from PIL import Image
+from tqdm import tqdm
+
 
 def load_and_encode_image(example):
     """将图片路径转换为Base64编码"""
@@ -39,9 +42,18 @@ def decode_and_get_info(base64_str):
 
 
 # 1. 加载JSON数据集（假设JSON结构中包含"image_path"字段）
-dataset = load_dataset('json', data_files='/mnt/haochen/datasets/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json')['train']
-image_dir = "/mnt/haochen/datasets/LLaVA-Pretrain"
-save_path = "/mnt/haochen/datasets/encoded_llava_pretrain"
+with open("/mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json", "r") as file:
+    data = json.load(file)
+
+processed_data = []
+for item in tqdm(data):
+    new_item = item.copy()
+    new_item.pop("id", None)
+    processed_data.append(new_item)
+
+dataset = Dataset.from_list(processed_data)
+image_dir = "/mnt/haochen/datasets/Cambrian-737K/Cambrian737k"
+save_path = "/mnt/haochen/datasets/encoded_cambrian_737k"
 
 # 2. 处理数据集：将图片路径转换为Base64
 # 对于大量图片，建议使用num_proc参数并行处理
@@ -51,7 +63,7 @@ encoded_dataset = dataset.map(
 )
 
 # 3. 保存处理后的数据集（会自动分片存储）
-encoded_dataset.save_to_disk(save_path)
+encoded_dataset.save_to_disk(save_path, shard_size="5GB")
 
 # 验证结果（可选）
 print("处理完成的第一个样本Base64长度:", len(encoded_dataset[0]['image']))
