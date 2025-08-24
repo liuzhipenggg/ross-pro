@@ -9,18 +9,22 @@ from tqdm import tqdm
 
 def load_and_encode_image(example):
     """将图片路径转换为Base64编码"""
-    try:
-        # 打开图片并转换为Base64
-        with open(os.path.join(image_dir, example['image']), 'rb') as image_file:
-            # 读取图片二进制数据
-            image_data = image_file.read()
-            # 转换为Base64编码
-            base64_encoded = base64.b64encode(image_data).decode('utf-8')
-            example['image'] = base64_encoded
-        return example
-    except Exception as e:
-        print(f"处理图片 {example['image']} 时出错: {e}")
-        # 出错时返回原示例（可根据需求修改）
+    if 'image' in example.keys():
+        try:
+            # 打开图片并转换为Base64
+            with open(os.path.join(image_dir, example['image']), 'rb') as image_file:
+                # 读取图片二进制数据
+                image_data = image_file.read()
+                # 转换为Base64编码
+                base64_encoded = base64.b64encode(image_data).decode('utf-8')
+                example['image'] = base64_encoded
+            return example
+        except Exception as e:
+            print(f"处理图片 {example['image']} 时出错: {e}")
+            # 出错时返回原示例（可根据需求修改）
+            return None
+    else:
+        print("no image, simply return")
         return example
 
 
