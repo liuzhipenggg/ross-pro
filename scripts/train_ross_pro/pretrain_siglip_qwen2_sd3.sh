@@ -26,8 +26,8 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --version plain \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-3-medium-diffusers/vae \
     \
-    --data_path /mnt/haochen/datasets/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
-    --image_folder /mnt/haochen/datasets/LLaVA-Pretrain \
+    --data_path /mnt/haochen/datasets/encoded_llava_pretrain \
+    --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
