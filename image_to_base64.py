@@ -15,6 +15,20 @@ def load_and_encode_image(example):
             with open(os.path.join(image_dir, example['image']), 'rb') as image_file:
                 # 读取图片二进制数据
                 image_data = image_file.read()
+                with Image.open(io.BytesIO(image_data)) as img:
+                    width, height = img.size
+                    min_side = min(width, height)
+                    
+                    if min_side > 384:
+                        scale = 384 / min_side
+                        new_width = int(width * scale)
+                        new_height = int(height * scale)
+                        resized_img = img.resize((new_width, new_height), Image.LANCZOS)
+                        
+                        buffer = io.BytesIO()
+                        resized_img.save(buffer, format=img.format or 'JPEG')
+                        image_data = buffer.getvalue()
+
                 # 转换为Base64编码
                 base64_encoded = base64.b64encode(image_data).decode('utf-8')
                 example['image'] = base64_encoded
