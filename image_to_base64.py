@@ -18,7 +18,7 @@ def load_and_encode_image(example):
                 with Image.open(io.BytesIO(image_data)) as img:
                     width, height = img.size
                     min_side = min(width, height)
-                    
+
                     if min_side > 384:
                         scale = 384 / min_side
                         new_width = int(width * scale)
@@ -58,26 +58,24 @@ def decode_and_get_info(base64_str):
     
     return image, image_size_bytes, width, height
 
-
-# 1. 加载JSON数据集（假设JSON结构中包含"image_path"字段）
-with open("/mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json", "r") as file:
-    data = json.load(file)
-
 processed_data = []
-for item in tqdm(data):
-    new_item = item.copy()
-    new_item.pop("id", None)
-    processed_data.append(new_item)
+# 1. 加载JSON数据集（假设JSON结构中包含"image_path"字段）
+with open("/mnt/haochen/datasets/Cambrian-Alignment/jsons/alignment_2.5m.jsonl", "r") as file:
+    for line in tqdm(file):
+        item = json.loads(line)
+        item.pop("id", None)
+        if item["image"].startswith("./sam/"):
+            processed_data.append(item)
 
 dataset = Dataset.from_list(processed_data)
-image_dir = "/mnt/haochen/datasets/Cambrian-737K/Cambrian737k"
-save_path = "/mnt/haochen/datasets/encoded_cambrian_737k"
+image_dir = "/root/paddlejob/Cambrian-Alignment"
+save_path = "/mnt/haochen/datasets/encoded_cambrian_alignment_sam_570k_384"
 
 # 2. 处理数据集：将图片路径转换为Base64
 # 对于大量图片，建议使用num_proc参数并行处理
 encoded_dataset = dataset.map(
     load_and_encode_image,
-    num_proc=16,
+    num_proc=1,
 )
 
 # 3. 保存处理后的数据集（会自动分片存储）
