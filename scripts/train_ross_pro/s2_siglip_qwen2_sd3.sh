@@ -15,7 +15,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     train.py \
     --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 4 \
-    --learning_rate 1e-4 \
+    --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
     --mm_inv_projector_lr 1e-5 \
     \
@@ -28,7 +28,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --version qwen_2 \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-3-medium-diffusers/vae \
     \
-    --data_path /mnt/haochen/datasets/encoded_cambrian_alignment_coco_118k \
+    --data_path /mnt/haochen/datasets/encoded_cambrian_alignment_coco_118k,/mnt/haochen/datasets/encoded_cambrian_alignment_allava_631k \
     --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \

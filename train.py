@@ -932,8 +932,15 @@ class LazySupervisedDataset(Dataset):
             with megfile.smart_open(data_path, "r", encoding="utf-8") as file:
                 list_data_dict = json.load(file)
         else:
-            from datasets import load_from_disk
-            list_data_dict = load_from_disk(data_path)
+            from datasets import load_from_disk, concatenate_datasets
+            if "," in data_path:
+                data_paths = data_path.split(',')
+                list_data_dict = []
+                for path in data_paths:
+                    list_data_dict.append(load_from_disk(path))
+                list_data_dict = concatenate_datasets(list_data_dict)
+            else:
+                list_data_dict = load_from_disk(data_path)
 
         rank0_print("Formatting inputs...Skip in lazy mode")
         self.tokenizer = tokenizer
@@ -953,11 +960,11 @@ class LazySupervisedDataset(Dataset):
 
     @property
     def modality_lengths(self):
-        length_list = []
-        for sample in self.list_data_dict:
-            cur_len = sum(len(conv['value'].split()) for conv in sample['conversations'])
-            cur_len = cur_len if 'image' in sample else -cur_len
-            length_list.append(cur_len)
+        length_list = [1] * len(self.list_data_dict)
+        # for sample in self.list_data_dict:
+        #     cur_len = sum(len(conv['value'].split()) for conv in sample['conversations'])
+        #     cur_len = cur_len if 'image' in sample else -cur_len
+        #     length_list.append(cur_len)
         return length_list
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
