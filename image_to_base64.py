@@ -79,7 +79,7 @@ encoded_dataset = dataset.map(
 )
 
 # 3. 保存处理后的数据集（会自动分片存储）
-encoded_dataset.save_to_disk(save_path, shard_size="5GB")
+encoded_dataset.save_to_disk(save_path)
 
 # 验证结果（可选）
 print("处理完成的第一个样本Base64长度:", len(encoded_dataset[0]['image']))
