@@ -375,8 +375,8 @@ class SD3Transformer2DModel(
         height, width = hidden_states.shape[-2:]
 
         hidden_states = self.pos_embed(hidden_states)  # takes care of adding positional embeddings too.
-        if z is not None:
-            hidden_states = hidden_states + z
+        # if z is not None:
+        #     hidden_states = hidden_states + z
         temb = self.time_text_embed(timestep, pooled_projections)
         encoder_hidden_states = self.context_embedder(encoder_hidden_states)
 
@@ -387,6 +387,8 @@ class SD3Transformer2DModel(
             joint_attention_kwargs.update(ip_hidden_states=ip_hidden_states, temb=ip_temb)
 
         for index_block, block in enumerate(self.transformer_blocks):
+            if index_block == 23 and z is not None:
+                hidden_states = hidden_states + z
             # Skip specified layers
             is_skip = True if skip_layers is not None and index_block in skip_layers else False
 

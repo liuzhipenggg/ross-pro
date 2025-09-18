@@ -15,11 +15,11 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     train.py \
     --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 4 \
-    --learning_rate 1e-3 \
-    --warmup_ratio 0.03 \
+    --learning_rate 1e-4 \
+    --warmup_ratio 0.2 \
     --mm_inv_projector_lr 1e-5 \
     \
-    --deepspeed ./scripts/zero2.json \
+    --deepspeed ./scripts/zero3.json \
     --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
     --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd/mm_projector.bin \
     --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd/mm_inv_projector.bin \
@@ -28,7 +28,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --version qwen_2 \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-3-medium-diffusers/vae \
     \
-    --data_path /mnt/haochen/datasets/encoded_cambrian_alignment_coco_118k,/mnt/haochen/datasets/encoded_cambrian_alignment_allava_631k \
+    --data_path /mnt/haochen/datasets/encoded_cambrian_alignment_sam_570k_384,/mnt/haochen/datasets/encoded_cambrian_alignment_coco_118k,/mnt/haochen/datasets/encoded_cambrian_alignment_allava_631k \
     --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \
@@ -44,7 +44,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --per_device_eval_batch_size 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 4355 \
+    --save_steps 5155 \
     --save_total_limit 1 \
     --save_only_model \
     --weight_decay 0. \
