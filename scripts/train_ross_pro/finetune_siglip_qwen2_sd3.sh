@@ -29,8 +29,8 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --version qwen_2 \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-3-medium-diffusers/vae \
     \
-    --data_path /mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json \
-    --image_folder /mnt/haochen/datasets/Cambrian-737K/Cambrian737k \
+    --data_path /mnt/haochen/datasets/encoded_cambrian_737k \
+    --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \
     --mm_inv_projector_type sd3xomni_mlp2x \
@@ -40,7 +40,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --num_train_epochs 10 \
+    --num_train_epochs 1 \
     --per_device_eval_batch_size 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
