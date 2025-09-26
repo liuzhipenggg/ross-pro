@@ -60,3 +60,5 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
 
 mkdir /mnt/haochen/ross-pro-ckpt/$EXP_NAME
 rsync -ah --progress ./checkpoints/$EXP_NAME/checkpoint-5755/* /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+
+bash /root/paddlejob/ross-pro/run.sh

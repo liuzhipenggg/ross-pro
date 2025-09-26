@@ -1431,6 +1431,11 @@ ross_series = {
     "ross-pro-siglip-qwen2-7b-sdxl-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sdxl-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd/checkpoint-5755"),
 
     "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-ct1319k-ftsd-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-ct1319k-ftsd-sft737k-ftclip-ftsd/checkpoint-5755"),
+
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk5": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk5/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk11": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk11/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk17": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk17/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk23": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk23/checkpoint-5755"),
 }
 
 ursa_series = {
