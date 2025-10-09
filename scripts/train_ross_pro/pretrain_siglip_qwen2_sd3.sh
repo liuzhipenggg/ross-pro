@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk23"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk0-cfg"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -50,7 +50,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    --report_to wandb \
+    --report_to none \
     --run_name $EXP_NAME
 
 rm -fr ./checkpoints/$EXP_NAME/checkpoint*

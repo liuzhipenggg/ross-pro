@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk23"
+EXP_NAME="ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk0-cfg"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -22,8 +22,8 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
-    --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk23/mm_projector.bin \
-    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk23/mm_inv_projector.bin \
+    --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk0-cfg/mm_projector.bin \
+    --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-blk0-cfg/mm_inv_projector.bin \
     --output_dir ./checkpoints/$EXP_NAME \
     --vision_tower /root/paddlejob/siglip-so400m-patch14-384 \
     --version qwen_2 \
@@ -55,7 +55,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    --report_to wandb \
+    --report_to none \
     --run_name $EXP_NAME
 
 mkdir /mnt/haochen/ross-pro-ckpt/$EXP_NAME
