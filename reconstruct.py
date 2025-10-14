@@ -335,28 +335,35 @@ def eval_model(args):
 
                 score = score_func.calculate_similarity(img_pil, recon_img_pil)
                 info["score"] = score
-                results.append(score)
+                results.append(info)
             else:
                 raise NotImplementedError("Only support stable-diffusion-3-medium-diffusers, stable-diffusion-2-1, stable-diffusion-v1-5, and stable-diffusion-v1-4")   
 
     with open(f"./mmtbench/{args.model_path}/results_all.json", "w") as file:
         json.dump(results, file, indent=4, ensure_ascii=False)
 
-    for k in ["l2-category", "category"]:
+    for k in ["l2-category"]:
         print("-" * 100)
         
-        scores = {}
-        all_category = set([x["l2-category"] for x in results])
+        save_scores = {}
+        all_category = set([x[k] for x in results])
         for category in all_category:
             scores = [x["score"] for x in results if x[k] == category]
             correct = [x["correct"] for x in results if x[k] == category]
             mean_score = sum(scores) / len(scores)
             acc = sum(correct) / len(correct)
-            scores[category] = {"mean_score": mean_score, "acc": acc}
-            print(f"{category}: {acc:.4f}\t{mean_score:.4f}")
+            save_scores[category] = {"mean_score": mean_score, "acc": acc}
+            print(f"{category}: {(acc * 100):.2f}/{(mean_score * 100):.2f}")
+        
+        scores = [x["score"] for x in results]
+        correct = [x["correct"] for x in results]
+        mean_score = sum(scores) / len(scores)
+        acc = sum(correct) / len(correct)
+        save_scores["overall"] = {"mean_score": mean_score, "acc": acc}
+        print(f"=> overall: {(acc * 100):.2f}/{(mean_score * 100):.2f}")
         
         with open(f"./mmtbench/{args.model_path}/scores_{k}.json", "w") as file:
-            json.dump(scores, file, indent=4, ensure_ascii=False)
+            json.dump(save_scores, file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":

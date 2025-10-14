@@ -1,0 +1,102 @@
+[
+    {
+        "index": 0,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "A",
+        "prediction": "A",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/0.jpg",
+        "correct": 1,
+        "score": 0.42397361993789673
+    },
+    {
+        "index": 1,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "A",
+        "prediction": "A",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/1.jpg",
+        "correct": 1,
+        "score": 0.3054884672164917
+    },
+    {
+        "index": 2,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "C",
+        "prediction": "D",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/2.jpg",
+        "correct": 0,
+        "score": 0.038294821977615356
+    },
+    {
+        "index": 3,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "A",
+        "prediction": "A",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/3.jpg",
+        "correct": 1,
+        "score": 0.26427122950553894
+    },
+    {
+        "index": 4,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "D",
+        "prediction": "D",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/4.jpg",
+        "correct": 1,
+        "score": 0.25572800636291504
+    },
+    {
+        "index": 5,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "B",
+        "prediction": "D",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/5.jpg",
+        "correct": 0,
+        "score": 0.2518325746059418
+    },
+    {
+        "index": 6,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "B",
+        "prediction": "D",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/6.jpg",
+        "correct": 0,
+        "score": 0.24335746467113495
+    },
+    {
+        "index": 7,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "C",
+        "prediction": "C",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/7.jpg",
+        "correct": 1,
+        "score": 0.21378029882907867
+    },
+    {
+        "index": 8,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "D",
+        "prediction": "A",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/8.jpg",
+        "correct": 0,
+        "score": 0.33332812786102295
+    },
+    {
+        "index": 9,
+        "category": "meme_vedio_understanding",
+        "l2-category": "meme_understanding",
+        "answer": "C",
+        "prediction": "B",
+        "image_path": "/root/LMUData/images/MMT-Bench_VAL/9.jpg",
+        "correct": 0,
+        "score": 0.3621312379837036
+    }
+]

@@ -1,0 +1,10 @@
+{
+    "meme_understanding": {
+        "mean_score": 0.26921858489513395,
+        "acc": 0.5
+    },
+    "overall": {
+        "mean_score": 0.26921858489513395,
+        "acc": 0.5
+    }
+}
