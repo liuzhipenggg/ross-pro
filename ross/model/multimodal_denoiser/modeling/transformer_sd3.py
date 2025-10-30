@@ -387,7 +387,7 @@ class SD3Transformer2DModel(
             joint_attention_kwargs.update(ip_hidden_states=ip_hidden_states, temb=ip_temb)
 
         for index_block, block in enumerate(self.transformer_blocks):
-            if index_block == 17 and z is not None:
+            if index_block == 5 and z is not None:
                 hidden_states = hidden_states + z
             # Skip specified layers
             is_skip = True if skip_layers is not None and index_block in skip_layers else False

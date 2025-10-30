@@ -1,0 +1,134 @@
+{
+    "pixel_level_perception": {
+        "mean_score": 0.638035202889066,
+        "acc": 0.3684210526315789
+    },
+    "relation_reasoning": {
+        "mean_score": 0.6428559213876724,
+        "acc": 0.675
+    },
+    "localization": {
+        "mean_score": 0.5441396150231008,
+        "acc": 0.46153846153846156
+    },
+    "image_retrieval": {
+        "mean_score": 0.48490568814533097,
+        "acc": 0.3142857142857143
+    },
+    "visual_recognition": {
+        "mean_score": 0.5858737031439473,
+        "acc": 0.7401215805471124
+    },
+    "anomaly_detection": {
+        "mean_score": 0.4908800332993269,
+        "acc": 0.59
+    },
+    "image-to-image_translation": {
+        "mean_score": 0.5078482106328011,
+        "acc": 0.25
+    },
+    "visual_grounding": {
+        "mean_score": 0.6952170020876787,
+        "acc": 0.5384615384615384
+    },
+    "autonomous_driving": {
+        "mean_score": 0.531684220135212,
+        "acc": 0.47
+    },
+    "action_recognition": {
+        "mean_score": 0.5131597173213959,
+        "acc": 0.54
+    },
+    "intelligence_quotient_test": {
+        "mean_score": 0.6345302194356919,
+        "acc": 0.0
+    },
+    "visual_prompt_understanding": {
+        "mean_score": 0.6324705802477323,
+        "acc": 0.6410256410256411
+    },
+    "image_evaluation_judgement": {
+        "mean_score": 0.5456146415323019,
+        "acc": 0.4
+    },
+    "keypoint_detection": {
+        "mean_score": 0.6574435311087062,
+        "acc": 0.29213483146067415
+    },
+    "embodied_ai": {
+        "mean_score": 0.613511161506176,
+        "acc": 0.85
+    },
+    "visual_code": {
+        "mean_score": 0.5574950188398361,
+        "acc": 0.31666666666666665
+    },
+    "visual_commonsense_reasoning": {
+        "mean_score": 0.6197938747704029,
+        "acc": 0.75
+    },
+    "threed": {
+        "mean_score": 0.6089275106787682,
+        "acc": 0.475
+    },
+    "cross_image_matching": {
+        "mean_score": 0.4564479572077592,
+        "acc": 0.55
+    },
+    "meme_understanding": {
+        "mean_score": 0.4730101689696312,
+        "acc": 0.525
+    },
+    "emotion": {
+        "mean_score": 0.6707255373398463,
+        "acc": 0.5833333333333334
+    },
+    "counting": {
+        "mean_score": 0.560670091850417,
+        "acc": 0.4142857142857143
+    },
+    "doc_understanding": {
+        "mean_score": 0.7874019142360457,
+        "acc": 0.5403225806451613
+    },
+    "hallucination": {
+        "mean_score": 0.6715532436966896,
+        "acc": 0.5875
+    },
+    "ocr": {
+        "mean_score": 0.4192687916258971,
+        "acc": 0.5166666666666667
+    },
+    "discipline_knowledge_reasoning": {
+        "mean_score": 0.6360687781602908,
+        "acc": 0.38461538461538464
+    },
+    "visual_illusion": {
+        "mean_score": 0.5754242931740193,
+        "acc": 0.5189873417721519
+    },
+    "gui_navigation": {
+        "mean_score": 0.5692261341959238,
+        "acc": 0.4
+    },
+    "medical_understanding": {
+        "mean_score": 0.4489250473678112,
+        "acc": 0.72
+    },
+    "multiple_image_analysis": {
+        "mean_score": 0.5116478599607944,
+        "acc": 0.5
+    },
+    "visual_captioning": {
+        "mean_score": 0.57627216890548,
+        "acc": 0.7421383647798742
+    },
+    "temporal_understanding": {
+        "mean_score": 0.4367222034870976,
+        "acc": 0.29292929292929293
+    },
+    "overall": {
+        "mean_score": 0.5734953742312296,
+        "acc": 0.5442916533418612
+    }
+}

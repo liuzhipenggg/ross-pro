@@ -326,8 +326,8 @@ def eval_model(args):
                     boi_ids=boi_ids,
                     eoi_ids=eoi_ids,
                     num_inference_steps=30,
-                    guidance_scale=7.5,
-                    do_classifier_free_guidance=False,
+                    guidance_scale=7,
+                    do_classifier_free_guidance=True,
                 )
                 recon_img_pil = vae_image_processor.postprocess(recon_img_tensor)[0]
                 img_pil = vae_image_processor.postprocess(img_tensor)[0]
@@ -361,9 +361,52 @@ def eval_model(args):
         acc = sum(correct) / len(correct)
         save_scores["overall"] = {"mean_score": mean_score, "acc": acc}
         print(f"=> overall: {(acc * 100):.2f}/{(mean_score * 100):.2f}")
+
+        res = {}
+        for category in [
+            "overall",
+            "visual_recognition",
+            "localization",
+            "ocr",
+            "counting",
+            "hallucination",
+            "image_retrieval",
+            "threed",
+            "visual_captioning",
+            "visual_grounding",
+            "doc_understanding",
+            "action_recognition",
+            "pixel_level_perception",
+            "image-to-image_translation",
+            "relation_reasoning",
+            "intelligence_quotient_test",
+            "emotion",
+            "visual_illusion",
+            "meme_understanding",
+            "visual_prompt_understanding",
+            "anomaly_detection",
+            "keypoint_detection",
+            "visual_commonsense_reasoning",
+            "image_evaluation_judgement",
+            "multiple_image_analysis",
+            "cross_image_matching",
+            "temporal_understanding",
+            "visual_code",
+            "medical_understanding",
+            "autonomous_driving",
+            "discipline_knowledge_reasoning",
+            "embodied_ai",
+            "gui_navigation",
+        ]:
+            acc = save_scores[category]['acc'] * 100
+            mean_score = save_scores[category]['mean_score'] * 100
+            res[category] = f"{acc:.2f}/{mean_score:.2f}"
+        res = pd.DataFrame([res]).T
+        res.to_csv(f"./mmtbench/{model_path}/scores_{k}.csv")
+        print(res)
         
-        with open(f"./mmtbench/{args.model_path}/scores_{k}.json", "w") as file:
-            json.dump(save_scores, file, indent=4, ensure_ascii=False)
+        # with open(f"./mmtbench/{args.model_path}/scores_{k}.json", "w") as file:
+        #     json.dump(save_scores, file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":

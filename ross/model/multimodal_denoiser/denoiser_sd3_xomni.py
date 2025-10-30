@@ -105,10 +105,10 @@ class RossSD3XOmni(nn.Module):
             z = F.interpolate(z, size=(z_h, z_w), mode='bilinear')
         z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
 
-        # drop_latent_mask = torch.rand(bsz) < 0.1
-        # drop_latent_mask = drop_latent_mask.unsqueeze(-1).unsqueeze(-1).cuda().to(z.dtype)
-        # # zero embedding for cfg
-        # z = drop_latent_mask * z * 0. + (1 - drop_latent_mask) * z
+        drop_latent_mask = torch.rand(bsz) < 0.1
+        drop_latent_mask = drop_latent_mask.unsqueeze(-1).unsqueeze(-1).cuda().to(z.dtype)
+        # zero embedding for cfg
+        z = drop_latent_mask * z * 0. + (1 - drop_latent_mask) * z
 
         # Predict the noise residual
         model_pred = self.transformer(
@@ -174,6 +174,10 @@ class RossSD3XOmni(nn.Module):
         vae_scale_factor=8,
         guidance_scale=7.5,
         do_classifier_free_guidance=False,  # not supported, as training do not have cfg
+        skip_layer_guidance_start=-1,   # 0.01 for SD-3.5
+        skip_layer_guidance_stop=-1,    # 0.2  for SD-3.5
+        skip_guidance_layers=None,      # [7, 8, 9] for SD-3.5
+        skip_layer_guidance_scale=1,
     ):
         # Obtained from https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion_3/pipeline_stable_diffusion_3.py
         
@@ -184,7 +188,19 @@ class RossSD3XOmni(nn.Module):
         prompt_embeds = torch.load(self.negative_prompt_path).to(z.device).to(z.dtype).repeat(bsz, 1, 1)
         pooled_prompt_embeds = torch.load(self.negative_pooled_prompt_path).to(z.device).to(z.dtype).repeat(bsz, 1)
 
-        assert not do_classifier_free_guidance, "Classifier Free Guidance is currently unsupported!"
+        # assert not do_classifier_free_guidance, "Classifier Free Guidance is currently unsupported!"
+
+        # interpolate LMM outputs
+        z_w = z_h = self.transformer.config.sample_size // self.transformer.config.patch_size
+        if z_h != z.shape[2] or z_w != z.shape[3]:
+            z = F.interpolate(z, size=(z_h, z_w), mode='bilinear')
+        z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
+
+        if do_classifier_free_guidance:
+            z = torch.cat([z * 0., z], dim=0)
+            # repeat negative prompts twice
+            prompt_embeds = torch.cat([prompt_embeds, prompt_embeds], dim=0)
+            pooled_prompt_embeds = torch.cat([pooled_prompt_embeds, pooled_prompt_embeds], dim=0)
 
         # 4. Prepare latent variables
         batch_size = prompt_embeds.shape[0]
@@ -201,12 +217,6 @@ class RossSD3XOmni(nn.Module):
             generator=None,
             latents=None,
         )
-
-        # interpolate LMM outputs
-        z_w = z_h = self.transformer.config.sample_size // self.transformer.config.patch_size
-        if z_h != z.shape[2] or z_w != z.shape[3]:
-            z = F.interpolate(z, size=(z_h, z_w), mode='bilinear')
-        z = self.mlp(rearrange(z, "b c h w -> b (h w) c").contiguous())
 
         # 5. Prepare timesteps
         scheduler_kwargs = {}
@@ -250,6 +260,32 @@ class RossSD3XOmni(nn.Module):
                     return_dict=False,
                     z=self.factor * z,
                 )[0]
+
+                # perform guidance
+                if do_classifier_free_guidance:
+                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    should_skip_layers = (
+                        True
+                        if i > num_inference_steps * skip_layer_guidance_start
+                        and i < num_inference_steps * skip_layer_guidance_stop
+                        else False
+                    )
+                    if skip_guidance_layers is not None and should_skip_layers:
+                        timestep = t.expand(latents.shape[0])
+                        latent_model_input = latents
+                        noise_pred_skip_layers = self.transformer(
+                            hidden_states=latent_model_input,
+                            timestep=timestep,
+                            encoder_hidden_states=original_prompt_embeds,
+                            pooled_projections=original_pooled_prompt_embeds,
+                            joint_attention_kwargs=self.joint_attention_kwargs,
+                            return_dict=False,
+                            skip_layers=skip_guidance_layers,
+                        )[0]
+                        noise_pred = (
+                            noise_pred + (noise_pred_text - noise_pred_skip_layers) * skip_layer_guidance_scale
+                        )
 
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_dtype = latents.dtype
