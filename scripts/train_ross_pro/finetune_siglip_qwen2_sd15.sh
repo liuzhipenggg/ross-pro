@@ -30,8 +30,8 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --version qwen_2 \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-v1-5/vae \
     \
-    --data_path /mnt/haochen/datasets/Cambrian-737K/Cambrian737k/Cambrian737k.json \
-    --image_folder /mnt/haochen/datasets/Cambrian-737K/Cambrian737k \
+    --data_path /mnt/haochen/datasets/encoded_cambrian_737k \
+    --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \
     --mm_inv_projector_type sd15xomni_mlp2x \
@@ -60,4 +60,11 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --run_name $EXP_NAME
 
 mkdir /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+
+rm -fr ./checkpoints/$EXP_NAME/checkpoint*
+mkdir ./checkpoints/$EXP_NAME/checkpoint-5755
+mv ./checkpoints/$EXP_NAME/* ./checkpoints/$EXP_NAME/checkpoint-5755
+
 rsync -ah --progress ./checkpoints/$EXP_NAME/checkpoint-5755/* /mnt/haochen/ross-pro-ckpt/$EXP_NAME
+
+bash /root/paddlejob/ross-pro/run.sh

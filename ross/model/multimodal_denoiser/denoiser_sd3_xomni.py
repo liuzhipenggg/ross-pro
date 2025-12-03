@@ -245,54 +245,54 @@ class RossSD3XOmni(nn.Module):
         self._num_timesteps = len(timesteps)
 
         # 7. Denoising loop
-        with tqdm(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
-                latent_model_input = latents
-                # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-                timestep = t.expand(latent_model_input.shape[0])
+        # with tqdm(total=num_inference_steps) as progress_bar:
+        for i, t in enumerate(timesteps):
+            latent_model_input = latents
+            # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
+            timestep = t.expand(latent_model_input.shape[0])
 
-                noise_pred = self.transformer(
-                    hidden_states=latent_model_input,
-                    timestep=timestep,
-                    encoder_hidden_states=prompt_embeds,
-                    pooled_projections=pooled_prompt_embeds,
-                    # joint_attention_kwargs=self.joint_attention_kwargs,
-                    return_dict=False,
-                    z=self.factor * z,
-                )[0]
+            noise_pred = self.transformer(
+                hidden_states=latent_model_input,
+                timestep=timestep,
+                encoder_hidden_states=prompt_embeds,
+                pooled_projections=pooled_prompt_embeds,
+                # joint_attention_kwargs=self.joint_attention_kwargs,
+                return_dict=False,
+                z=self.factor * z,
+            )[0]
 
-                # perform guidance
-                if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
-                    should_skip_layers = (
-                        True
-                        if i > num_inference_steps * skip_layer_guidance_start
-                        and i < num_inference_steps * skip_layer_guidance_stop
-                        else False
+            # perform guidance
+            if do_classifier_free_guidance:
+                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+                should_skip_layers = (
+                    True
+                    if i > num_inference_steps * skip_layer_guidance_start
+                    and i < num_inference_steps * skip_layer_guidance_stop
+                    else False
+                )
+                if skip_guidance_layers is not None and should_skip_layers:
+                    timestep = t.expand(latents.shape[0])
+                    latent_model_input = latents
+                    noise_pred_skip_layers = self.transformer(
+                        hidden_states=latent_model_input,
+                        timestep=timestep,
+                        encoder_hidden_states=original_prompt_embeds,
+                        pooled_projections=original_pooled_prompt_embeds,
+                        joint_attention_kwargs=self.joint_attention_kwargs,
+                        return_dict=False,
+                        skip_layers=skip_guidance_layers,
+                    )[0]
+                    noise_pred = (
+                        noise_pred + (noise_pred_text - noise_pred_skip_layers) * skip_layer_guidance_scale
                     )
-                    if skip_guidance_layers is not None and should_skip_layers:
-                        timestep = t.expand(latents.shape[0])
-                        latent_model_input = latents
-                        noise_pred_skip_layers = self.transformer(
-                            hidden_states=latent_model_input,
-                            timestep=timestep,
-                            encoder_hidden_states=original_prompt_embeds,
-                            pooled_projections=original_pooled_prompt_embeds,
-                            joint_attention_kwargs=self.joint_attention_kwargs,
-                            return_dict=False,
-                            skip_layers=skip_guidance_layers,
-                        )[0]
-                        noise_pred = (
-                            noise_pred + (noise_pred_text - noise_pred_skip_layers) * skip_layer_guidance_scale
-                        )
 
-                # compute the previous noisy sample x_t -> x_t-1
-                latents_dtype = latents.dtype
-                latents = self.noise_scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+            # compute the previous noisy sample x_t -> x_t-1
+            latents_dtype = latents.dtype
+            latents = self.noise_scheduler.step(noise_pred, t, latents, return_dict=False)[0]
 
                 # call the callback, if provided
-                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.noise_scheduler.order == 0):
-                    progress_bar.update()
+                # if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.noise_scheduler.order == 0):
+                #     progress_bar.update()
 
         return latents

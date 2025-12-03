@@ -35,3 +35,8 @@ pretrained*
 # Demo
 serve_images/
 visuals/
+
+mmtbench/*/*.png
+mmtbench/*/*.json
+allbench/*/*.png
+allbench/*/*.json

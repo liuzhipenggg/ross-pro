@@ -5,7 +5,7 @@ import pandas as pd
 
 
 if __name__ == "__main__":
-    model_path = "llava-siglip-qwen2-7b-pt558k-sft737k"
+    model_path = "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk5"
     # model_path = "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k"
     result_path = f"../VLMEvalKit/outputs/{model_path}/{model_path}_MMT-Bench_VAL.xlsx"
     data = pd.read_excel(result_path, sheet_name="Sheet1").to_dict("records")

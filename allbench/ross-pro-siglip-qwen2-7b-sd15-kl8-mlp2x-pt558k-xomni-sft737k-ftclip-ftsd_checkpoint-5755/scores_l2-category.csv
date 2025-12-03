@@ -1,0 +1,223 @@
+,0
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> futurism,100.00/66.67/1668.11
+MMBench_DEV_EN/attribute_comparison,88.65/78.01/1553.40
+A-Bench_VAL/part1 -> basic_recognition -> major,92.35/95.08/1695.44
+CCBench/calligraphy_painting,59.21/54.39/1895.49
+WorldMedQA-V/spain-en,42.40/43.20/1510.30
+StaticEmbodiedBench/Macro Planning,66.67/73.33/1988.83
+TaskMeAnything_v1_imageqa_random/random_2d_where_attribute,37.67/41.67/1334.88
+MMBench_DEV_EN_V11/image_topic,95.34/94.07/1742.50
+Q-Bench1_VAL/type_0_concern_2,62.39/69.23/1839.95
+TaskMeAnything_v1_imageqa_random/random_3d_what_attribute_distance,60.33/63.33/1813.98
+OCRBench/Regular Text Recognition,0.00/0.00/1791.78
+MMBench_DEV_EN_V11/attribute_recognition,95.41/92.20/1686.49
+"POPE/adversarial,popular",0.00/0.00/1754.08
+TaskMeAnything_v1_imageqa_random/random_3d_what_distance,46.33/49.33/1841.60
+MMBench_DEV_EN/social_relation,94.77/90.70/1695.94
+MMBench_DEV_EN/celebrity_recognition,92.93/91.92/1751.39
+"POPE/random,popular",0.00/0.00/1713.32
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> sports,68.18/63.64/1702.13
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> pop,100.00/100.00/1318.72
+StaticEmbodiedBench/Micro Perception,66.67/66.67/1865.38
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> geography,90.48/76.19/1666.12
+MMBench_DEV_EN_V11/image_emotion,92.92/90.42/1718.61
+MMBench_DEV_CN/identity_reasoning,98.86/98.30/1552.47
+MMBench_DEV_EN_V11/image_quality,42.91/43.64/1629.54
+Q-Bench1_VAL/type_1_concern_3,78.89/80.00/1734.29
+MMBench_DEV_EN/attribute_recognition,93.18/90.53/1706.17
+VisOnlyQA-VLMEvalKit/geometry__triangle,54.00/48.00/1261.21
+MMBench_DEV_EN/function_reasoning,90.46/89.47/1756.04
+AI2D_TEST/moonPhaseEquinox,57.76/55.96/1335.24
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> fauvism,100.00/100.00/1349.95
+A-Bench_VAL/part1 -> bag_of_words -> counting,71.43/79.59/1692.52
+AI2D_TEST/photosynthesisRespiration,65.82/62.03/1333.34
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> deco,100.00/100.00/1468.55
+CCBench/historical_figure,63.57/47.86/1728.57
+MMSci_DEV_MCQ/Health sciences,33.64/32.42/1288.44
+A-Bench_VAL/part1 -> bag_of_words -> noun_as_adjective,83.72/83.72/1737.93
+MMStar/instance reasoning,64.40/58.00/1581.67
+AesBench_VAL/AesP,75.83/80.00/1734.65
+MMBench_DEV_CN/spatial_relationship,44.63/40.68/1548.19
+Q-Bench1_VAL/type_2_concern_2,58.62/65.52/1869.28
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> science,87.50/87.50/1697.98
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> food,90.91/90.91/1776.40
+MMBench_DEV_EN_V11/action_recognition,92.28/87.78/1769.91
+MMStar/math,37.60/32.40/1290.26
+TaskMeAnything_v1_imageqa_random/random_3d_what_attribute_size,75.33/75.33/1818.50
+Q-Bench1_VAL/type_0_concern_1,65.14/66.86/1801.29
+CCBench/sketch_reasoning,75.56/80.56/1623.83
+AI2D_TEST/rockCycle,59.70/58.21/1219.63
+MMBench_DEV_EN/image_quality,51.33/55.33/1560.06
+OCRBench/Key Information Extraction,0.00/0.00/1272.02
+MMBench_DEV_CN/image_topic,97.14/92.14/1696.20
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> psychedelic,100.00/100.00/1300.11
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> cubism,100.00/0.00/1292.24
+TaskMeAnything_v1_imageqa_random/random_2d_what_attribute,58.67/67.00/1334.25
+VisOnlyQA-VLMEvalKit/syntheticgeometry__area,18.00/20.00/1303.57
+POPE/random,0.00/0.00/1753.11
+MMBench_DEV_EN/identity_reasoning,98.86/98.30/1549.95
+MMBench_DEV_EN_V11/celebrity_recognition,93.69/92.93/1749.36
+MMBench_DEV_EN_V11/social_relation,93.93/87.85/1674.02
+TaskMeAnything_v1_imageqa_random/random_3d_where_distance,33.33/41.33/1835.15
+SpatialEval/spatialgrid,45.67/41.20/1544.35
+MMBench_DEV_EN/physical_relation,52.13/61.70/1558.23
+VisOnlyQA-VLMEvalKit/charts__intersection,40.00/40.00/1260.98
+TaskMeAnything_v1_imageqa_random/random_3d_where_size,38.67/43.67/1807.43
+OCRBench/Handwritten Mathematical Expression Recognition,0.00/0.00/1799.23
+CV-Bench-2D/Count,59.39/61.80/1792.12
+AI2D_TEST/volcano,62.50/75.00/1378.71
+POPE/popular,0.00/0.00/1752.97
+AI2D_TEST/lifeCycles,62.35/57.79/1257.99
+VStarBench/direct_attributes,51.30/47.83/1657.82
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> art,100.00/100.00/1526.92
+CV-Bench-2D/Relation,78.92/70.46/1780.14
+MMBench_DEV_EN_V11/physical_property_reasoning,56.97/55.76/1487.65
+MMBench_DEV_CN/image_emotion,89.50/89.00/1745.27
+Q-Bench1_VAL/type_1_concern_2,71.00/68.00/1847.43
+"POPE/adversarial,random",0.00/0.00/1762.11
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> victorian,100.00/0.00/1278.76
+MMBench_DEV_EN_V11/future_prediction,67.23/62.71/1733.50
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> company,100.00/87.50/1558.26
+MMBench_DEV_CN/attribute_comparison,79.43/74.47/1565.31
+TaskMeAnything_v1_imageqa_random/random_3d_how_many,61.00/60.00/1796.14
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> surrealism,100.00/100.00/1484.19
+MMBench_DEV_EN/action_recognition,94.42/95.35/1761.65
+VisOnlyQA-VLMEvalKit/syntheticgeometry__quadrilateral,46.00/48.00/1313.37
+AI2D_TEST/partsOfA,74.33/73.10/1275.21
+OCRBench/Scene Text-centric VQA,0.00/0.00/1614.35
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> abstract,100.00/100.00/1554.10
+AI2D_TEST/partsOfTheEarth,57.69/65.38/1331.85
+MMBench_DEV_CN/image_style,91.04/90.09/1685.52
+MMBench_DEV_EN/nature_relation,83.80/85.47/1625.90
+MMStar/logical reasoning,45.20/40.40/1520.99
+MMBench_DEV_CN/physical_property_reasoning,66.67/74.43/1571.43
+VisOnlyQA-VLMEvalKit/geometry__quadrilateral,46.00/56.00/1285.16
+AI2D_TEST/faultsEarthquakes,67.86/53.57/1379.63
+CV-Bench-3D/Distance,50.67/60.17/1850.97
+VisOnlyQA-VLMEvalKit/geometry__length,20.00/24.00/1291.47
+VisOnlyQA-VLMEvalKit/syntheticgeometry__angle,19.00/19.00/1289.79
+VisOnlyQA-VLMEvalKit/3d__angle,22.00/22.00/2287.94
+OCRBench/Non-Semantic Text Recognition,0.00/0.00/1247.80
+MMBench_DEV_EN_V11/physical_relation,63.39/63.39/1613.06
+MMBench_DEV_CN/ocr,89.10/89.10/1348.92
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> expressionism,100.00/50.00/1342.92
+"POPE/adversarial,random,popular",0.00/0.00/1753.47
+MMStar/science & technology,30.00/28.40/1299.35
+WorldMedQA-V/israel-en,30.65/29.03/1536.01
+VisOnlyQA-VLMEvalKit/syntheticgeometry__triangle,47.00/50.00/1325.64
+CCBench/cultural_relic,61.60/58.51/1965.15
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> dadaism,100.00/100.00/1319.05
+MMBench_DEV_EN_V11/nature_relation,84.06/86.47/1627.67
+VisOnlyQA-VLMEvalKit/geometry__diameter_radius,48.00/48.00/1290.12
+OCRBench/Digit String Recognition,0.00/0.00/1990.23
+Q-Bench1_VAL/type_0_concern_0,73.40/77.66/1805.40
+MMSci_DEV_MCQ/Earth and environmental sciences,35.77/36.99/1337.92
+MMBench_DEV_CN/attribute_recognition,90.53/89.77/1722.88
+AI2D_TEST/atomStructure,75.00/62.50/1170.60
+MMBench_DEV_EN/structuralized_imagetext_understanding,69.50/69.15/1285.03
+MMBench_DEV_EN/spatial_relationship,50.28/40.11/1552.25
+VisOnlyQA-VLMEvalKit/syntheticgeometry__length,24.00/17.00/1266.96
+AesBench_VAL/AesA,30.83/25.83/1732.46
+A-Bench_VAL/part1 -> basic_recognition -> minor,94.92/96.61/1729.70
+MMBench_DEV_CN/structuralized_imagetext_understanding,67.02/68.09/1272.91
+A-Bench_VAL/part1 -> bag_of_words -> attribute,93.64/93.64/1710.48
+AI2D_TEST/rockStrata,68.29/63.41/1346.58
+MMSci_DEV_MCQ/Scientific community and society,52.94/55.88/1273.25
+OCRBench/Irregular Text Recognition,0.00/0.00/1752.24
+CCBench/food_clothes,59.57/63.26/1612.25
+AI2D_TEST/eclipses,90.32/90.32/1271.87
+StaticEmbodiedBench/Phased Reasoning,30.00/32.86/1857.06
+MMBench_DEV_CN/physical_relation,55.32/53.19/1570.25
+MMStar/coarse perception,64.00/64.40/1679.03
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> weather,92.31/84.62/1838.14
+MMBench_DEV_EN/image_style,92.92/90.57/1667.11
+A-Bench_VAL/part1 -> outside_knowledge -> contradiction overcome,66.67/75.00/1660.33
+A-Bench_VAL/part2 -> generative,58.40/58.00/1717.97
+MMBench_DEV_CN/image_scene,97.30/96.31/1721.17
+MMBench_DEV_EN_V11/function_reasoning,94.47/93.19/1704.77
+AesBench_VAL/AesE,60.83/53.33/1740.31
+MMBench_DEV_CN/social_relation,95.35/93.02/1686.76
+A-Bench_VAL/part1 -> bag_of_words -> composition -> arrangement,86.67/80.00/1686.05
+MMBench_DEV_EN_V11/spatial_relationship,60.10/46.11/1600.24
+WorldMedQA-V/brazil-en,20.22/22.47/1548.50
+TaskMeAnything_v1_imageqa_random/random_2d_where,47.33/42.67/1336.66
+Q-Bench1_VAL/type_1_concern_0,55.33/56.67/1856.04
+A-Bench_VAL/part1 -> bag_of_words -> composition -> orientation,69.23/76.92/1706.96
+MMBench_DEV_CN/nature_relation,85.47/83.80/1633.30
+TaskMeAnything_v1_imageqa_random/random_2d_what,56.33/61.33/1339.84
+Q-Bench1_VAL/type_2_concern_1,68.28/66.21/1826.36
+MMBench_DEV_CN/future_prediction,66.92/56.92/1843.79
+MMBench_DEV_CN/image_quality,44.67/48.67/1549.62
+WorldMedQA-V/japan,38.10/40.48/1579.57
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> creature,83.33/91.67/1735.53
+AI2D_TEST/foodChainsWebs,86.92/82.79/1248.95
+VisOnlyQA-VLMEvalKit/chemistry__shape_single,48.00/44.00/1134.28
+MMStar/fine-grained perception,44.00/48.00/1678.61
+SpatialEval/spatialmap,45.87/43.80/1192.19
+AI2D_TEST/waterCNPCycle,52.27/54.55/1314.78
+TaskMeAnything_v1_imageqa_random/random_sg_what_relation,80.33/85.33/1737.73
+MMBench_DEV_EN/image_scene,95.82/95.58/1723.17
+VisOnlyQA-VLMEvalKit/3d__size,36.00/32.00/2324.73
+TaskMeAnything_v1_imageqa_random/random_3d_what,50.33/53.67/1795.39
+CCBench/scenery_building,51.05/50.79/1612.93
+OCRBench/Doc-oriented VQA,0.00/0.00/1371.55
+MMBench_DEV_CN/object_localization,67.94/65.08/1727.22
+VisOnlyQA-VLMEvalKit/geometry__angle,18.00/24.00/1265.58
+TaskMeAnything_v1_imageqa_random/random_3d_what_attribute,60.67/66.67/1801.51
+SpatialEval/mazenav,24.93/30.53/1294.30
+MMBench_DEV_EN_V11/ocr,87.50/89.17/1397.38
+A-Bench_VAL/part1 -> bag_of_words -> composition -> size,71.43/57.14/1660.37
+WorldMedQA-V/spain,42.40/43.20/1520.74
+POPE/adversarial,0.00/0.00/1754.30
+MMSci_DEV_MCQ/Biological sciences,33.03/33.75/1298.10
+MMBench_DEV_EN_V11/image_scene,91.10/91.10/1727.61
+VisOnlyQA-VLMEvalKit/charts__extraction,24.00/18.00/1321.61
+MMBench_DEV_EN/image_topic,94.29/91.43/1692.49
+MMBench_DEV_EN/object_localization,70.16/63.49/1729.84
+MMBench_DEV_EN/future_prediction,56.15/49.23/1842.55
+VStarBench/relative_position,60.53/59.21/1661.70
+Q-Bench1_VAL/type_2_concern_0,50.57/55.11/1815.20
+OCRBench/Artistic Text Recognition,0.00/0.00/1399.07
+TaskMeAnything_v1_imageqa_random/random_3d_what_size,56.00/62.33/1826.13
+TaskMeAnything_v1_imageqa_random/random_2d_how_many,59.33/55.67/1345.71
+AI2D_TEST/solarSystem,86.11/88.89/1460.17
+MMBench_DEV_CN/function_reasoning,91.78/87.50/1759.89
+WorldMedQA-V/japan-en,38.10/40.48/1565.77
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> material,76.19/90.48/1841.86
+TaskMeAnything_v1_imageqa_random/random_3d_where,45.33/42.67/1799.83
+TaskMeAnything_v1_imageqa_random/random_sg_what_attribute,67.00/78.00/1782.02
+MMSci_DEV_MCQ/Physical sciences,38.50/37.25/1310.89
+A-Bench_VAL/part2 -> aesthetic,53.42/46.58/1623.09
+AI2D_TEST/typesOf,66.47/61.81/1256.72
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> vehicle,100.00/89.47/1672.93
+Q-Bench1_VAL/type_0_concern_3,82.86/82.86/1708.38
+CV-Bench-3D/Depth,70.67/80.33/1864.31
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> minimalism,50.00/50.00/1895.20
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> steampunk,100.00/100.00/1694.23
+MMBench_DEV_EN/image_emotion,90.00/87.50/1741.41
+CCBench/traditional_show,62.12/59.85/1453.63
+SpatialEval/spatialreal,58.52/49.63/1698.27
+MMBench_DEV_EN/physical_property_reasoning,66.67/66.21/1570.22
+Q-Bench1_VAL/type_1_concern_1,83.04/74.11/1765.47
+A-Bench_VAL/part2 -> technical,71.81/64.48/1612.09
+OCRBench/Handwriting Recognition,0.00/0.00/1369.31
+MMBench_DEV_EN_V11/image_style,88.31/85.48/1673.19
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> style -> art_deco,100.00/50.00/1476.83
+A-Bench_VAL/part1 -> bag_of_words -> composition -> occlusion,60.00/50.00/1692.63
+A-Bench_VAL/part1 -> outside_knowledge -> specific-terms -> daily,76.47/88.24/1650.35
+A-OKVQA/ALL,85.15/83.41/1742.77
+MMBench_DEV_CN/action_recognition,92.09/93.49/1757.78
+TaskMeAnything_v1_imageqa_random/random_3d_where_attribute,38.67/36.33/1783.78
+VisOnlyQA-VLMEvalKit/geometry__area,26.00/16.00/1271.22
+MMBench_DEV_CN/celebrity_recognition,89.65/89.65/1749.87
+Q-Bench1_VAL/type_2_concern_3,70.59/67.06/1722.39
+WorldMedQA-V/israel,30.65/29.03/1521.42
+MMBench_DEV_EN_V11/identity_reasoning,99.01/98.52/1533.39
+TaskMeAnything_v1_imageqa_random/random_sg_what_object,89.00/90.33/1739.89
+RealWorldQA/all,59.08/59.48/1874.39
+MMBench_DEV_EN_V11/object_localization,74.09/69.34/1716.87
+MMBench_DEV_EN_V11/structuralized_imagetext_understanding,55.48/52.65/1298.28
+MMBench_DEV_EN/ocr,87.18/89.10/1336.18
+WorldMedQA-V/brazil,20.22/22.47/1553.71
+MMBench_DEV_EN_V11/attribute_comparison,86.50/77.30/1610.43
+overall,55.08/54.65/1596.51

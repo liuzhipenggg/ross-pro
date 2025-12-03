@@ -216,36 +216,36 @@ class RossStableDiffusionXOmni(nn.Module):
         # 7. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * self.noise_scheduler.order
         self._num_timesteps = len(timesteps)
-        with tqdm(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
-                # expand the latents if we are doing classifier free guidance
-                latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
-                latent_model_input = self.noise_scheduler.scale_model_input(latent_model_input, t)
+        # with tqdm(total=num_inference_steps) as progress_bar:
+        for i, t in enumerate(timesteps):
+            # expand the latents if we are doing classifier free guidance
+            latent_model_input = torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+            latent_model_input = self.noise_scheduler.scale_model_input(latent_model_input, t)
 
-                # predict the noise residual
-                noise_pred = self.unet(
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=prompt_embeds,
-                    timestep_cond=timestep_cond,
-                    return_dict=False,
-                    z=self.factor * z,
-                )[0]
+            # predict the noise residual
+            noise_pred = self.unet(
+                latent_model_input,
+                t,
+                encoder_hidden_states=prompt_embeds,
+                timestep_cond=timestep_cond,
+                return_dict=False,
+                z=self.factor * z,
+            )[0]
 
-                # perform guidance
-                if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+            # perform guidance
+            if do_classifier_free_guidance:
+                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
-                if do_classifier_free_guidance and guidance_rescale > 0.0:
-                    # Based on 3.4. in https://huggingface.co/papers/2305.08891
-                    noise_pred = rescale_noise_cfg(noise_pred, noise_pred_text, guidance_rescale=guidance_rescale)
+            if do_classifier_free_guidance and guidance_rescale > 0.0:
+                # Based on 3.4. in https://huggingface.co/papers/2305.08891
+                noise_pred = rescale_noise_cfg(noise_pred, noise_pred_text, guidance_rescale=guidance_rescale)
 
-                # compute the previous noisy sample x_t -> x_t-1
-                latents = self.noise_scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+            # compute the previous noisy sample x_t -> x_t-1
+            latents = self.noise_scheduler.step(noise_pred, t, latents, return_dict=False)[0]
 
                 # call the callback, if provided
-                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.noise_scheduler.order == 0):
-                    progress_bar.update()
+                # if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.noise_scheduler.order == 0):
+                #     progress_bar.update()
 
         return latents

@@ -31,6 +31,8 @@ from ross.model.builder import load_pretrained_model
 from ross.utils import disable_torch_init
 from ross.mm_utils import tokenizer_image_token, process_images, get_model_name_from_path
 
+from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import peak_signal_noise_ratio as psnr
 
 
 def split_list(lst, n):
@@ -133,103 +135,24 @@ class DINOv2Score():
         Returns:
             torch.Tensor: Similarity scores, returns batch results if input is batch data
         """
-        features1 = self.encode_image(image1)
-        features2 = self.encode_image(image2)
+        image1 = np.array(image1.resize(image2.size))
+        image2 = np.array(image2)
+
+        psnr_value = psnr(image1, image2)
         
-        # Calculate cosine similarity
-        similarity = torch.cosine_similarity(features1, features2, dim=1)
+        return psnr_value
+
+        # features1 = self.encode_image(image1)
+        # features2 = self.encode_image(image2)
         
-        # Return scalar if single image, return tensor if batch
-        if similarity.shape[0] == 1:
-            return similarity.item()
-        else:
-            return similarity
-
-
-class DinoV3Score():
-    def __init__(self, model_name="/root/paddlejob/dinov3-vitl16-pretrain-lvd1689m",
-                 device=None):
-        if device is not None:
-            self.device = device
-        else:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_name = model_name
-        self.model = None
-        self.processor = None
-        self._load_model_and_transform()
-
-    def _load_model_and_transform(self):
-        """
-        加载DINOv3模型和处理器
-        """
-        try:
-            print(f"Loading DINOv3 model: {self.model_name}")
-            self.processor = AutoImageProcessor.from_pretrained(self.model_name)
-            self.model = AutoModel.from_pretrained(self.model_name).to(self.device)
-            self.model.eval()
-            print(f"Model loaded successfully on {self.device}")
-        except Exception as e:
-            print(f"Error loading model: {e}")
-            raise e
-
-    def encode_image(self, image):
-        """
-        编码图像，返回特征向量
-        Args:
-            image: PIL Image, 图像路径字符串, 或 torch.Tensor [b, 3, h, w]
-        Returns:
-            torch.Tensor: 图像特征向量 (使用CLS token)
-        """
-        if isinstance(image, str):
-            image = Image.open(image).convert('RGB')
-            with torch.no_grad():
-                inputs = self.processor(images=image, return_tensors="pt").to(self.device)
-                outputs = self.model(**inputs)
-                image_features = outputs.last_hidden_state[:, 0, :]  # [batch_size, hidden_dim]
-                image_features = F.normalize(image_features, p=2, dim=1)
-        elif isinstance(image, Image.Image):
-            with torch.no_grad():
-                inputs = self.processor(images=image, return_tensors="pt").to(self.device)
-                outputs = self.model(**inputs)
-                image_features = outputs.last_hidden_state[:, 0, :]  # [batch_size, hidden_dim]
-                image_features = F.normalize(image_features, p=2, dim=1)
-        elif isinstance(image, torch.Tensor):
-            # 处理 [b, 3, h, w] 格式的tensor数据
-            if len(image.shape) != 4 or image.shape[1] != 3:
-                raise ValueError("Tensor input must have shape [b, 3, h, w]")
-            
-            image = image.to(self.device)
-            with torch.no_grad():
-                # 直接使用tensor作为模型输入
-                outputs = self.model(pixel_values=image)
-                image_features = outputs.last_hidden_state[:, 0, :]  # [batch_size, hidden_dim]
-                image_features = F.normalize(image_features, p=2, dim=1)
-        else:
-            raise ValueError("Image must be PIL Image, file path string, or torch.Tensor [b, 3, h, w]")
+        # # Calculate cosine similarity
+        # similarity = torch.cosine_similarity(features1, features2, dim=1)
         
-        return image_features
-
-    def calculate_similarity(self, image1, image2):
-        """
-        计算两张图像之间的相似度
-        Args:
-            image1: 第一张图像 (PIL Image, 路径, 或 torch.Tensor [b, 3, h, w])
-            image2: 第二张图像 (PIL Image, 路径, 或 torch.Tensor [b, 3, h, w])
-        Returns:
-            torch.Tensor: 相似度分数，如果输入是批量数据则返回批量结果
-        """
-        features1 = self.encode_image(image1)
-        features2 = self.encode_image(image2)
-        
-        # 计算余弦相似度
-        similarity = torch.cosine_similarity(features1, features2, dim=1)
-        
-        # 如果是单张图像，返回标量；如果是批量，返回tensor
-        if similarity.shape[0] == 1:
-            return similarity.item()
-        else:
-            return similarity
-
+        # # Return scalar if single image, return tensor if batch
+        # if similarity.shape[0] == 1:
+        #     return similarity.item()
+        # else:
+        #     return similarity
 
 def eval_model(args):
     torch.manual_seed(args.seed)
@@ -327,14 +250,16 @@ def eval_model(args):
                     eoi_ids=eoi_ids,
                     num_inference_steps=30,
                     guidance_scale=7,
-                    do_classifier_free_guidance=True,
+                    do_classifier_free_guidance=False,
                 )
                 recon_img_pil = vae_image_processor.postprocess(recon_img_tensor)[0]
                 img_pil = vae_image_processor.postprocess(img_tensor)[0]
-                # combine_images_horizontal(img_pil, recon_img_pil, f"./mmtbench/{args.model_path}/{name}")
+                recon_img_pil.save(f"./mmtbench/{args.model_path}/{idx}.png")
+                # combine_images_horizontal(img_pil, recon_img_pil, f"./mmtbench/{args.model_path}/{idx}.png")
 
-                score = score_func.calculate_similarity(img_pil, recon_img_pil)
-                info["score"] = score
+                psnr = score_func.calculate_similarity(img_pil, recon_img_pil)
+                info["score"] = psnr
+                # print(psnr)
                 results.append(info)
             else:
                 raise NotImplementedError("Only support stable-diffusion-3-medium-diffusers, stable-diffusion-2-1, stable-diffusion-v1-5, and stable-diffusion-v1-4")   
@@ -353,14 +278,14 @@ def eval_model(args):
             mean_score = sum(scores) / len(scores)
             acc = sum(correct) / len(correct)
             save_scores[category] = {"mean_score": mean_score, "acc": acc}
-            print(f"{category}: {(acc * 100):.2f}/{(mean_score * 100):.2f}")
+            print(f"{category}: {(acc * 100):.2f}/{(mean_score):.2f}")
         
         scores = [x["score"] for x in results]
         correct = [x["correct"] for x in results]
         mean_score = sum(scores) / len(scores)
         acc = sum(correct) / len(correct)
         save_scores["overall"] = {"mean_score": mean_score, "acc": acc}
-        print(f"=> overall: {(acc * 100):.2f}/{(mean_score * 100):.2f}")
+        print(f"=> overall: {(acc * 100):.2f}/{(mean_score):.2f}")
 
         res = {}
         for category in [
@@ -402,7 +327,7 @@ def eval_model(args):
             mean_score = save_scores[category]['mean_score'] * 100
             res[category] = f"{acc:.2f}/{mean_score:.2f}"
         res = pd.DataFrame([res]).T
-        res.to_csv(f"./mmtbench/{model_path}/scores_{k}.csv")
+        res.to_csv(f"./mmtbench/{args.model_path}/scores_{k}.csv")
         print(res)
         
         # with open(f"./mmtbench/{args.model_path}/scores_{k}.json", "w") as file:
