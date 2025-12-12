@@ -889,7 +889,7 @@ def preprocess(
         return preprocess_v1(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version == "mpt":
         return preprocess_mpt(sources, tokenizer, has_image=has_image)
-    if conversation_lib.default_conversation.version.startswith("qwen_2"):
+    if conversation_lib.default_conversation.version == "qwen_2":
         return preprocess_qwen_2(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version.startswith("llama3"):
         return preprocess_llama3(sources, tokenizer, has_image=has_image)
@@ -1129,6 +1129,14 @@ def train(attn_implementation="flash_attention_2"):
 
     if 'qwen2' in model_args.model_name_or_path.lower():
         model = RossQwen2ForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            cache_dir=training_args.cache_dir,
+            attn_implementation=attn_implementation,
+            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+            **bnb_model_from_pretrained_args
+        )
+    elif 'qwen3' in model_args.model_name_or_path.lower():
+        model = RossQwen3ForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=training_args.cache_dir,
             attn_implementation=attn_implementation,

@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-xomni"
+EXP_NAME="ross-pro-siglip2-qwen3-4b-sd15-kl8-mlp2x-pt558k-xomni"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -20,9 +20,9 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --mm_inv_projector_lr 1e-4 \
     \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
+    --model_name_or_path /root/paddlejob/Qwen3-4B-Instruct-2507 \
     --output_dir ./checkpoints/$EXP_NAME \
-    --vision_tower /root/paddlejob/siglip-so400m-patch14-384 \
+    --vision_tower /root/paddlejob/siglip2-so400m-patch14-384 \
     --version plain \
     --mm_pixel_decoder /root/paddlejob/stable-diffusion-v1-5/vae \
     \
@@ -38,7 +38,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --bf16 True \
     --num_train_epochs 1 \
     --per_device_eval_batch_size 4 \
-    --eval_strategy "no" \
+    --evaluation_strategy "no" \
     --save_strategy "steps" \
     --save_steps 24000 \
     --save_total_limit 1 \

@@ -97,16 +97,17 @@ class RossMetaModel:
         self.config.image_embed_len = self.image_embed_len
         self.config.image_mean = self.vision_tower.image_processor.image_mean
         self.config.image_std = self.vision_tower.image_processor.image_std
-        if "stable-diffusion-3-medium-diffusers" in self.config.mm_pixel_decoder:
-            self.config.decode_image_size = 1024
-        elif "stable-diffusion-3.5-medium" in self.config.mm_pixel_decoder:
-            self.config.decode_image_size = 1024
-        elif "stable-diffusion-xl-base-1.0" in self.config.mm_pixel_decoder:
-            self.config.decode_image_size = 1024
-        elif "stable-diffusion-2-1" in self.config.mm_pixel_decoder:
-            self.config.decode_image_size = 768
-        elif "stable-diffusion-v1-5" in self.config.mm_pixel_decoder:
-            self.config.decode_image_size = 512
+        if isinstance(self.config.mm_pixel_decoder, str):
+            if "stable-diffusion-3-medium-diffusers" in self.config.mm_pixel_decoder:
+                self.config.decode_image_size = 1024
+            elif "stable-diffusion-3.5-medium" in self.config.mm_pixel_decoder:
+                self.config.decode_image_size = 1024
+            elif "stable-diffusion-xl-base-1.0" in self.config.mm_pixel_decoder:
+                self.config.decode_image_size = 1024
+            elif "stable-diffusion-2-1" in self.config.mm_pixel_decoder:
+                self.config.decode_image_size = 768
+            elif "stable-diffusion-v1-5" in self.config.mm_pixel_decoder:
+                self.config.decode_image_size = 512
         else:
             self.config.decode_image_size = self.vision_tower.config.image_size // self.vision_tower.config.patch_size * 16  # 336 -> 384; 384 -> 432
 

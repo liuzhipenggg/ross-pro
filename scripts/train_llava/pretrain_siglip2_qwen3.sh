@@ -1,10 +1,9 @@
 #!/bin/bash
 
-export http_proxy=agent.baidu.com:8188
-export https_proxy=agent.baidu.com:8188
-export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
+export https_proxy=http://10.162.37.16:8128
+export http_proxy=http://10.162.37.16:8128
 
-EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-xomni"
+EXP_NAME="llava-siglip2-qwen3-4b-pt558k"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -13,25 +12,23 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --master_addr="localhost" --master_port="29805" \
     \
     train.py \
-    --per_device_train_batch_size 8 \
-    --gradient_accumulation_steps 4 \
+    --per_device_train_batch_size 16 \
+    --gradient_accumulation_steps 2 \
     --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
-    --mm_inv_projector_lr 1e-4 \
     \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path /root/paddlejob/Qwen2-7B-Instruct \
+    --model_name_or_path /root/paddlejob/Qwen3-4B-Instruct-2507 \
     --output_dir ./checkpoints/$EXP_NAME \
-    --vision_tower /root/paddlejob/siglip-so400m-patch14-384 \
+    --vision_tower /root/paddlejob/siglip2-so400m-patch14-384 \
     --version plain \
-    --mm_pixel_decoder /root/paddlejob/stable-diffusion-v1-5/vae \
     \
     --data_path /mnt/haochen/datasets/encoded_llava_pretrain \
     --image_folder '' \
     \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
-    --mm_inv_projector_type sd15xomni_mlp2x \
+    --mm_inv_projector_type denoiser_vit3x \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
