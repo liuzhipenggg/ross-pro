@@ -209,7 +209,7 @@ def eval_model(args):
         # "HallusionBench",
         "MMBench_DEV_EN",
         "MMBench_DEV_CN",
-        "OCRBench",
+        # "OCRBench",
         # "ChartQA_TEST",
         "VStarBench",
     ]

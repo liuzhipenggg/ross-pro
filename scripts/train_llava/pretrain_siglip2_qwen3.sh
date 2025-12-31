@@ -3,7 +3,7 @@
 export https_proxy=http://10.162.37.16:8128
 export http_proxy=http://10.162.37.16:8128
 
-EXP_NAME="llava-siglip2-qwen3-4b-pt558k"
+EXP_NAME="llava-siglip2-qwen3-30b-a3b-pt558k"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -12,13 +12,13 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --master_addr="localhost" --master_port="29805" \
     \
     train.py \
-    --per_device_train_batch_size 16 \
-    --gradient_accumulation_steps 2 \
+    --per_device_train_batch_size 4 \
+    --gradient_accumulation_steps 8 \
     --learning_rate 1e-3 \
     --warmup_ratio 0.03 \
     \
-    --deepspeed ./scripts/zero2.json \
-    --model_name_or_path /root/paddlejob/Qwen3-4B-Instruct-2507 \
+    --deepspeed ./scripts/zero3.json \
+    --model_name_or_path /root/paddlejob/Qwen3-30B-A3B-Instruct-2507 \
     --output_dir ./checkpoints/$EXP_NAME \
     --vision_tower /root/paddlejob/siglip2-so400m-patch14-384 \
     --version plain \

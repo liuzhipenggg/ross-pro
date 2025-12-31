@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="ross-pro-siglip2-qwen3-4b-sd15-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd"
+EXP_NAME="ross-pro-siglip2-qwen3-30b-a3b-sd15-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd"
 # EXP_NAME="ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-xomni-hf"
 export WANDB_PROJECT=ross-pro
 
@@ -22,7 +22,7 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --mm_vision_tower_lr 2e-6 \
     \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path /root/paddlejob/Qwen3-4B-Instruct-2507 \
+    --model_name_or_path /root/paddlejob/Qwen3-30B-A3B-Instruct-2507 \
     --pretrain_mm_mlp_adapter ./checkpoints/ross-pro-siglip2-qwen3-4b-sd15-kl8-mlp2x-pt558k-xomni/mm_projector.bin \
     --pretrain_mm_inv_mlp_adapter ./checkpoints/ross-pro-siglip2-qwen3-4b-sd15-kl8-mlp2x-pt558k-xomni/mm_inv_projector.bin \
     --output_dir ./checkpoints/$EXP_NAME \

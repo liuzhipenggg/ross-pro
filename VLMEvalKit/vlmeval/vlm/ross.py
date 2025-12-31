@@ -36,10 +36,12 @@ class Ross(BaseModel):
         self.model.eval()
         self.model.cuda()
 
-        if 'qwen2' in model_path.lower():
+        if 'qwen' in model_path.lower():
             self.conv_mode = 'v1_qwen2'
         elif 'llama3' in model_path.lower():
             self.conv_mode = 'llama3'
+        # elif 'qwen3' in model_path.lower():
+        #     self.conv_mode = 'qwen_2_5'
         else:
             self.conv_mode = 'llava_v1'
 
@@ -157,4 +159,7 @@ class Ross(BaseModel):
                 input_ids, images=image_tensor, stopping_criteria=[stopping_criteria], **self.kwargs)
 
         output = self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+
+        print(prompt)
+        print(output)
         return output

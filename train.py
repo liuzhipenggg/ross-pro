@@ -1136,13 +1136,22 @@ def train(attn_implementation="flash_attention_2"):
             **bnb_model_from_pretrained_args
         )
     elif 'qwen3' in model_args.model_name_or_path.lower():
-        model = RossQwen3ForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            cache_dir=training_args.cache_dir,
-            attn_implementation=attn_implementation,
-            torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
-            **bnb_model_from_pretrained_args
-        )
+        if '30b-a3b' in model_args.model_name_or_path.lower():
+            model = RossQwen3MoeForCausalLM.from_pretrained(
+                model_args.model_name_or_path,
+                cache_dir=training_args.cache_dir,
+                attn_implementation=attn_implementation,
+                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+                **bnb_model_from_pretrained_args
+            )
+        else:
+            model = RossQwen3ForCausalLM.from_pretrained(
+                model_args.model_name_or_path,
+                cache_dir=training_args.cache_dir,
+                attn_implementation=attn_implementation,
+                torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
+                **bnb_model_from_pretrained_args
+            )
     elif 'vicuna' in model_args.model_name_or_path or 'Llama-3' in model_args.model_name_or_path:
         model = RossLlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,

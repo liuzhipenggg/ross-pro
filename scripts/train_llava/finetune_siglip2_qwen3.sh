@@ -4,7 +4,7 @@ export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export no_proxy=baidu.com,baidubce.com,localhost,127.0.0.1,bj.bcebos.com
 
-EXP_NAME="llava-siglip2-qwen3-4b-pt558k-sft737k"
+EXP_NAME="llava-siglip2-qwen3-30b-a3b-pt558k-sft737k"
 export WANDB_PROJECT=ross-pro
 
 set -x
@@ -13,17 +13,17 @@ torchrun --nproc-per-node=8 --nnodes $1 --node_rank $2 \
     --master_addr="localhost" --master_port="29805" \
     \
     train.py \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --per_device_train_batch_size 1 \
+    --gradient_accumulation_steps 16 \
     --learning_rate 2e-5 \
     --warmup_ratio 0.03 \
     \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path /root/paddlejob/Qwen3-4B-Instruct-2507 \
-    --pretrain_mm_mlp_adapter ./checkpoints/llava-siglip2-qwen3-4b-pt558k/mm_projector.bin \
+    --model_name_or_path /root/paddlejob/Qwen3-30B-A3B-Instruct-2507 \
+    --pretrain_mm_mlp_adapter ./checkpoints/llava-siglip2-qwen3-30b-a3b-pt558k/mm_projector.bin \
     --output_dir ./checkpoints/$EXP_NAME \
     --vision_tower /root/paddlejob/siglip2-so400m-patch14-384 \
-    --version qwen_2_5 \
+    --version qwen_2 \
     \
     --data_path /mnt/haochen/datasets/encoded_cambrian_737k \
     --image_folder '' \

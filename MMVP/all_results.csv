@@ -31,3 +31,6 @@ ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-ct1319k-ftsd-sft737k-ft
 ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk5_checkpoint-5755,2025-09-26 16:39:49,300.0,146,48.666666666666664
 ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk11_checkpoint-5755,2025-09-26 16:42:57,300.0,150,50.0
 ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd-blk17_checkpoint-5755,2025-09-26 16:45:58,300.0,140,46.666666666666664
+ross-pro-siglip2-qwen3-4b-sd15-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd_checkpoint-5755,2025-12-17 15:41:56,300.0,150,50.0
+llava-siglip2-qwen3-4b-pt558k-sft737k_checkpoint-5755,2025-12-24 14:29:51,300.0,134,44.666666666666664
+llava-siglip2-qwen3-4b-pt558k-sft737k_checkpoint-5755,2025-12-24 14:36:50,300.0,134,44.666666666666664

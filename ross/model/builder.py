@@ -76,6 +76,45 @@ def load_pretrained_model(
                 ignore_mismatched_sizes=True,
                 **kwargs
             )
+    elif 'qwen3' in model_name.lower():
+        if '30b-a3b' in model_name.lower():
+            print(f'=> loading RossQwen3MoeForCausalLM ...')
+            if zero3:
+                kwargs.pop("device_map")
+                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+                model = RossQwen3MoeForCausalLM.from_pretrained(
+                    model_path,
+                    # low_cpu_mem_usage=True,
+                    ignore_mismatched_sizes=True,
+                    **kwargs
+                )
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+                model = RossQwen3MoeForCausalLM.from_pretrained(
+                    model_path,
+                    low_cpu_mem_usage=True,
+                    ignore_mismatched_sizes=True,
+                    **kwargs
+                )
+        else:
+            print(f'=> loading RossQwen3ForCausalLM ...')
+            if zero3:
+                kwargs.pop("device_map")
+                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+                model = RossQwen3ForCausalLM.from_pretrained(
+                    model_path,
+                    # low_cpu_mem_usage=True,
+                    ignore_mismatched_sizes=True,
+                    **kwargs
+                )
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+                model = RossQwen3ForCausalLM.from_pretrained(
+                    model_path,
+                    low_cpu_mem_usage=True,
+                    ignore_mismatched_sizes=True,
+                    **kwargs
+                )
     else:
         print(f'=> loading RossLlamaForCausalLM ...')
         tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
