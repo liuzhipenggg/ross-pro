@@ -61,8 +61,33 @@ def combine_images_horizontal(img1, img2, output_path):
     return combined
 
 
+def _default_dinov2_path():
+    for p in [
+        os.environ.get("DINOV2_PATH"),
+        "/mnt/vdb1/yingyan.li/haochen.wang/hf_home/dinov2-large",
+        "/root/paddlejob/dinov2-large",
+        "facebook/dinov2-large",
+    ]:
+        if p and (os.path.isdir(p) or "/" not in p):
+            return p
+    return "facebook/dinov2-large"
+
+
+def _lmu_data_root():
+    # Prefer env; fall back to repo-local then legacy /root path.
+    for p in [
+        os.environ.get("LMUData"),
+        os.path.abspath("./data/LMUData"),
+        os.path.expanduser("~/LMUData"),
+        "/root/LMUData",
+    ]:
+        if p and os.path.isdir(p):
+            return p
+    return "/root/LMUData"
+
+
 class DINOv2Score():
-    def __init__(self, model_name="/root/paddlejob/dinov2-large"):
+    def __init__(self, model_name=None):
         """
         Initialize DINOv2 model and processor
         Args:
@@ -70,7 +95,7 @@ class DINOv2Score():
                        Options: facebook/dinov2-base, facebook/dinov2-large, facebook/dinov2-giant
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_name = model_name
+        self.model_name = model_name or _default_dinov2_path()
         self.model = None
         self.processor = None
         self._load_model_and_transform()
@@ -187,6 +212,9 @@ def eval_model(args):
     # load images
     os.makedirs(f"./allbench/{args.model_path}", exist_ok=True)
     results = []
+    lmu_root = _lmu_data_root()
+    print(f"=> LMUData root: {lmu_root}")
+    skip_llava = os.environ.get("SKIP_LLAVA_BASELINE", "1") == "1"
     dataset_names = [
         "MMBench_DEV_EN_V11",
             "AesBench_VAL",
@@ -213,14 +241,38 @@ def eval_model(args):
         # "ChartQA_TEST",
         "VStarBench",
     ]
+    if getattr(args, "datasets", None):
+        want = set(args.datasets)
+        dataset_names = [d for d in dataset_names if d in want]
+        missing = want - set(dataset_names)
+        if missing:
+            print(f"=> unknown --datasets: {sorted(missing)}")
+        print(f"=> datasets filter: {dataset_names}")
+    shard_items = bool(getattr(args, "datasets", None)) and args.num_chunks > 1
+    if args.num_chunks > 1 and not shard_items:
+        # round-robin shard for better load balance across GPUs
+        dataset_names = [d for i, d in enumerate(dataset_names) if i % args.num_chunks == args.chunk_idx]
+        print(f"=> chunk {args.chunk_idx}/{args.num_chunks} datasets: {dataset_names}")
+    elif shard_items:
+        print(f"=> item shard {args.chunk_idx}/{args.num_chunks} over {dataset_names}")
     for dataset_name in tqdm(dataset_names):
         print("-" * 50, dataset_name, "-" * 50)
         result_path = f"./VLMEvalKit/outputs/{args.model_path}/{args.model_path}_{dataset_name}.xlsx"
+        if not os.path.isfile(result_path):
+            print(f"=> skip missing VLMEval result: {result_path}")
+            continue
         data = pd.read_excel(result_path, sheet_name="Sheet1").to_dict("records")
 
         llava_model_path = "llava-siglip-qwen2-7b-pt558k-sft737k"
         llava_result_path = f"./VLMEvalKit/outputs/{llava_model_path}/{llava_model_path}_{dataset_name}.xlsx"
-        llava_data = pd.read_excel(llava_result_path, sheet_name="Sheet1").to_dict("records")
+        if skip_llava or not os.path.isfile(llava_result_path):
+            if not skip_llava:
+                print(f"=> LLaVA baseline missing, continuing without it: {llava_result_path}")
+            llava_data = [dict(item) for item in data]
+            for item in llava_data:
+                item["prediction"] = ""
+        else:
+            llava_data = pd.read_excel(llava_result_path, sheet_name="Sheet1").to_dict("records")
 
         if dataset_name.startswith("WorldMedQA-V"):
             data = [dict(item, category=item["capability"]) for item in data]
@@ -231,9 +283,19 @@ def eval_model(args):
 
         # process for each category
         categories = set([item["category"] for item in data])
+        wanted_cats = getattr(args, "categories", None)
+        if wanted_cats:
+            def _cat_ok(cat):
+                tokens = [t.strip() for t in str(cat).split(",")]
+                return any(w == str(cat) or w in tokens for w in wanted_cats)
+            categories = {c for c in categories if _cat_ok(c)}
+            print(f"=> category filter {wanted_cats} kept {sorted(categories, key=str)}", flush=True)
         for category in tqdm(categories):
             cur_data = [item for item in data if item["category"] == category]
-            cur_llava_data = [item for item in llava_data if item["category"] == category]
+            cur_llava_data = [item for item in llava_data if item.get("category", "all") == category]
+            if len(cur_llava_data) != len(cur_data):
+                # Align by zip length; missing baseline rows get empty prediction.
+                cur_llava_data = (cur_llava_data + [{"answer": "", "prediction": ""}] * len(cur_data))[:len(cur_data)]
 
             # if len(cur_data) > 100:
             #     index = random.sample(range(len(cur_data)), 100)
@@ -241,27 +303,33 @@ def eval_model(args):
             #     cur_llava_data = [cur_llava_data[idx] for idx in index]
 
             for idx, (item, llava_item) in enumerate(tqdm(zip(cur_data, cur_llava_data))):
+                if shard_items and (idx % args.num_chunks != args.chunk_idx):
+                    continue
                 if dataset_name == "HallusionBench":
-                    img_path = f"/root/LMUData/images/{dataset_name}/{item['index'].replace('_', '/', 2)}.jpg"
+                    img_path = f"{lmu_root}/images/{dataset_name}/{item['index'].replace('_', '/', 2)}.jpg"
 
                 elif dataset_name.startswith("MMBench"):
                     if "V11" in dataset_name:
-                        img_path = f"/root/LMUData/images/MMBench_V11/{item['index']}.jpg"
+                        img_path = f"{lmu_root}/images/MMBench_V11/{item['index']}.jpg"
                     else:
-                        img_path = f"/root/LMUData/images/MMBench/{item['index']}.jpg"
+                        img_path = f"{lmu_root}/images/MMBench/{item['index']}.jpg"
 
                 elif dataset_name.startswith("CV-Bench"):
-                    img_path = f"/root/LMUData/images/{dataset_name}/{item['image_path']}"
+                    img_path = f"{lmu_root}/images/{dataset_name}/{item['image_path']}"
 
                 elif dataset_name.startswith("AI2D"):
-                    img_path = f"/root/LMUData/images/{dataset_name}/{item['image_path']}"
+                    img_path = f"{lmu_root}/images/{dataset_name}/{item['image_path']}"
                 
                 elif dataset_name.startswith("VisOnlyQA-VLMEvalKit"):
-                    img_path = f"/root/LMUData/images/{dataset_name}/{item['image_path']}"
+                    img_path = f"{lmu_root}/images/{dataset_name}/{item['image_path']}"
 
                 else:
-                    img_path = f"/root/LMUData/images/{dataset_name}/{item['index']}.jpg"
+                    img_path = f"{lmu_root}/images/{dataset_name}/{item['index']}.jpg"
 
+                pred = str(item.get("prediction", "") or "")
+                ans = str(item.get("answer", "") or "")
+                llava_pred = str(llava_item.get("prediction", "") or "")
+                llava_ans = str(llava_item.get("answer", "") or ans)
                 info = {
                     "index": item["index"],
                     # "category": item["category"],
@@ -271,10 +339,15 @@ def eval_model(args):
                     "answer": item["answer"],
                     "prediction": item["prediction"],
                     "image_path": img_path,
-                    "correct": int(item["answer"].lower() == item["prediction"][0].lower()),
-                    "llava_correct": int(llava_item["answer"].lower() == llava_item["prediction"][0].lower()),
+                    "correct": int(bool(pred) and ans.lower() == pred[0].lower()) if pred else 0,
+                    "llava_correct": int(bool(llava_pred) and llava_ans.lower() == llava_pred[0].lower()) if llava_pred else 0,
                 }
                 
+                ext = os.environ.get("RECON_IMAGE_EXT", "png").lstrip(".").lower()
+                out_img = f"./allbench/{args.model_path}/{dataset_name}__{item['index']}__{idx}.{ext}"
+                if os.environ.get("RECON_SKIP_EXISTING", "1") != "0" and os.path.isfile(out_img):
+                    continue
+
                 img = Image.open(img_path).convert("RGB")
                 img_sizes = [img.size]
                 img_tensor = image_processor.preprocess(img, return_tensors="pt")["pixel_values"].to(torch.float16)   # [1, 3, 384, 384]
@@ -314,7 +387,7 @@ def eval_model(args):
 
                     hidden_states = outputs[0]
 
-                    if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder or "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder or "stable-diffusion-xl-base-1.0" in model.config.mm_pixel_decoder:
+                    if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder or "stable-diffusion-3.5-medium" in model.config.mm_pixel_decoder or "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder or "stable-diffusion-xl-base-1.0" in model.config.mm_pixel_decoder:
                         # DDPM / FlowMatching inference here
                         recon_img_tensor = model.inference_sd(
                             images=img_tensor,
@@ -327,7 +400,11 @@ def eval_model(args):
                         )
                         recon_img_pil = vae_image_processor.postprocess(recon_img_tensor)[0]
                         img_pil = vae_image_processor.postprocess(img_tensor)[0]
-                        recon_img_pil.save(f"./allbench/{args.model_path}/{idx}.png")
+                        if os.environ.get("RECON_SAVE_IMAGES", "1") != "0":
+                            if ext in ("jpg", "jpeg"):
+                                recon_img_pil.save(out_img, quality=90)
+                            else:
+                                recon_img_pil.save(out_img)
                         # combine_images_horizontal(img_pil, recon_img_pil, f"./allbench/{args.model_path}/{idx}.png")
 
                         psnr = score_func.calculate_similarity(img_pil, recon_img_pil)
@@ -335,16 +412,36 @@ def eval_model(args):
                         # print(psnr)
                         results.append(info)
                     else:
-                        raise NotImplementedError("Only support stable-diffusion-3-medium-diffusers, stable-diffusion-2-1, stable-diffusion-v1-5, and stable-diffusion-v1-4")   
-    
-    os.makedirs(f"./allbench/{model_name}", exist_ok=True)
+                        raise NotImplementedError("Only support stable-diffusion-3-medium-diffusers, stable-diffusion-2-1, stable-diffusion-v1-5, and stable-diffusion-v1-4")
 
-    with open(f"./allbench/{model_name}/results_all.json", "w") as file:
+    out_dir = f"./allbench/{args.model_path}"
+    os.makedirs(out_dir, exist_ok=True)
+    if args.num_chunks > 1:
+        chunk_path = f"{out_dir}/results_chunk{args.chunk_idx}.json"
+        with open(chunk_path, "w") as file:
+            json.dump(results, file, indent=4, ensure_ascii=False)
+        print(f"=> wrote {len(results)} results to {chunk_path}")
+        return
+
+    # Subset runs must not overwrite a full results_all.json from a prior sweep.
+    if getattr(args, "datasets", None):
+        tag = "_".join(args.datasets)
+        json_path = f"{out_dir}/results_{tag}.json"
+        with open(json_path, "w") as file:
+            json.dump(results, file, indent=4, ensure_ascii=False)
+        print(f"=> wrote {len(results)} results to {json_path} (skipped results_all.json)")
+        return
+
+    with open(f"{out_dir}/results_all.json", "w") as file:
         json.dump(results, file, indent=4, ensure_ascii=False)
 
+    _write_allbench_scores(results, out_dir)
+
+
+def _write_allbench_scores(results, out_dir):
     for k in ["l2-category"]:
         print("-" * 100)
-        
+
         save_scores = {}
         all_category = set([x[k] for x in results])
         for category in all_category:
@@ -358,7 +455,7 @@ def eval_model(args):
 
             save_scores[category] = {"mean_score": mean_score, "acc": acc, "llava_acc": llava_acc}
             print(f"{category}: {(acc * 100):.2f}/{(mean_score):.2f}")
-        
+
         scores = [x["score"] for x in results]
         correct = [x["correct"] for x in results]
         llava_correct = [x["llava_correct"] for x in results]
@@ -371,33 +468,6 @@ def eval_model(args):
         print(f"=> overall: {(acc * 100):.2f}/{(mean_score):.2f}")
 
         res = {}
-        # for category in [
-        #     "MMBench_DEV_EN_V11",
-        #     "AesBench_VAL",
-        #     "Q-Bench1_VAL",
-        #     "A-Bench_VAL",
-        #     "CCBench",
-        #     "AI2D_TEST",
-        #     "MMStar",
-        #     "RealWorldQA",
-        #     "TaskMeAnything_v1_imageqa_random",
-        #     "A-OKVQA",
-        #     "WorldMedQA-V",
-        #     "VisOnlyQA-VLMEvalKit",
-        #     "MMSci_DEV_MCQ",
-        #     "SpatialEval",
-        #     "StaticEmbodiedBench",
-        #     "CV-Bench-2D",
-        #     "CV-Bench-3D",
-        #     "POPE",
-        #     # "HallusionBench",
-        #     "MMBench_DEV_EN",
-        #     "MMBench_DEV_CN",
-        #     "OCRBench",
-        #     # "ChartQA_TEST",
-        #     "RealWorldQA",
-        #     "VStarBench",
-        # ]:
         for category in save_scores.keys():
             acc = save_scores[category]['acc'] * 100
             mean_score = save_scores[category]['mean_score'] * 100
@@ -405,11 +475,8 @@ def eval_model(args):
 
             res[category] = f"{llava_acc:.2f}/{acc:.2f}/{mean_score:.2f}"
         res = pd.DataFrame([res]).T
-        res.to_csv(f"./allbench/{model_name}/scores_{k}.csv")
+        res.to_csv(f"{out_dir}/scores_{k}.csv")
         print(res)
-        
-        # with open(f"./allbench/{args.model_path}/scores_{k}.json", "w") as file:
-        #     json.dump(save_scores, file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
@@ -419,6 +486,12 @@ if __name__ == "__main__":
     parser.add_argument("--conv_mode", type=str, default="qwen_2")
     parser.add_argument("--root_dir", type=str, default="/root/paddlejob/unibench")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--num_chunks", type=int, default=1)
+    parser.add_argument("--chunk_idx", type=int, default=0)
+    parser.add_argument("--datasets", nargs="+", default=None,
+                        help="If set, only these dataset names; item-shards when num_chunks>1.")
+    parser.add_argument("--categories", nargs="+", default=None,
+                        help="Keep categories equal to a name, or containing it as a comma-token (e.g. adversarial).")
     args = parser.parse_args()
 
     eval_model(args)

@@ -1,5 +1,6 @@
 import copy
 import math
+import os
 
 import numpy as np
 import torch
@@ -14,6 +15,10 @@ from diffusers.pipelines.stable_diffusion_3.pipeline_stable_diffusion_3 import r
 
 from ross.model.multimodal_denoiser.modeling.transformer_sd3 import SD3Transformer2DModel
 
+_ROSS_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_DEFAULT_NEG = os.path.join(_ROSS_ROOT, "negative_prompt_sd3.pt")
+_DEFAULT_POOLED = os.path.join(_ROSS_ROOT, "negative_pooled_prompt_sd3.pt")
+
 
 class RossSD3XOmni(nn.Module):
     def __init__(
@@ -26,15 +31,15 @@ class RossSD3XOmni(nn.Module):
         logit_mean=0.0,
         logit_std=1.0,
         mode_scale=1.29,
-        negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd3.pt",
-        negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd3.pt",
+        negative_prompt_path=None,
+        negative_pooled_prompt_path=None,
     ):
         super().__init__()
         self.ln_pre = nn.LayerNorm(z_channel, elementwise_affine=False)
         self.pos_embed = nn.Parameter(torch.zeros(1, n_patches, z_channel), requires_grad=True)
         torch.nn.init.normal_(self.pos_embed, std=.02)
-        self.negative_prompt_path = negative_prompt_path
-        self.negative_pooled_prompt_path = negative_pooled_prompt_path
+        self.negative_prompt_path = negative_prompt_path or _DEFAULT_NEG
+        self.negative_pooled_prompt_path = negative_pooled_prompt_path or _DEFAULT_POOLED
 
         self.transformer = SD3Transformer2DModel.from_pretrained(transformer_path)
         self.transformer.train().cuda()
@@ -92,6 +97,14 @@ class RossSD3XOmni(nn.Module):
         # zt = (1 - texp) * x + texp * z1
         sigmas = self.get_sigmas(timesteps, n_dim=target.ndim, dtype=target.dtype, device=target.device)
         noisy_model_input = (1.0 - sigmas) * target + sigmas * noise
+        t_f = timesteps.detach().float()
+        self._last_timestep_stats = {
+            "t_mean": float(t_f.mean()),
+            "t_std": float(t_f.std(unbiased=False)) if t_f.numel() > 1 else 0.0,
+            "t_min": float(t_f.min()),
+            "t_max": float(t_f.max()),
+            "sigma_mean": float(sigmas.detach().float().mean()),
+        }
 
         # Obtain hidden states
         encoder_hidden_states = torch.load(self.negative_prompt_path).to(target.device).to(target.dtype).repeat(bsz, 1, 1)

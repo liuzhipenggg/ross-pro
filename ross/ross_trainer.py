@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.utils.data import Sampler
 
 from transformers import Trainer
+from transformers.trainer_callback import TrainerCallback
 from transformers.trainer import (
     is_sagemaker_mp_enabled,
     get_parameter_names,
@@ -12,6 +13,7 @@ from transformers.trainer import (
     ALL_LAYERNORM_LAYERS,
     logger,
 )
+import json
 from typing import List, Optional
 
 
@@ -66,8 +68,8 @@ def get_modality_length_grouped_indices(lengths, batch_size, world_size, generat
     mm_indices, mm_lengths = zip(*[(i, l) for i, l in enumerate(lengths) if l > 0])
     lang_indices, lang_lengths = zip(*[(i, -l) for i, l in enumerate(lengths) if l < 0])
 
-    mm_shuffle = [mm_indices[i] for i in get_length_grouped_indices(mm_lengths, batch_size, world_size, generator=None)]
-    lang_shuffle = [lang_indices[i] for i in get_length_grouped_indices(lang_lengths, batch_size, world_size, generator=None)]
+    mm_shuffle = [mm_indices[i] for i in get_length_grouped_indices(mm_lengths, batch_size, world_size, generator=generator)]
+    lang_shuffle = [lang_indices[i] for i in get_length_grouped_indices(lang_lengths, batch_size, world_size, generator=generator)]
     megabatch_size = world_size * batch_size
     mm_megabatches = [mm_shuffle[i : i + megabatch_size] for i in range(0, len(mm_shuffle), megabatch_size)]
     lang_megabatches = [lang_shuffle[i : i + megabatch_size] for i in range(0, len(lang_shuffle), megabatch_size)]
@@ -130,6 +132,40 @@ class LengthGroupedSampler(Sampler):
         return iter(indices)
 
 
+class EarlyStepLoggerCallback(TrainerCallback):
+    """Persist first N optimizer-step logs (loss / vm_loss / grad_norm / timesteps)."""
+
+    def __init__(self, max_steps: int = 80):
+        self.max_steps = max_steps
+
+    def on_log(self, args, state, control, logs=None, model=None, **kwargs):
+        if not state.is_world_process_zero or not logs:
+            return
+        if state.global_step <= 0 or state.global_step > self.max_steps:
+            return
+        rec = {"step": int(state.global_step)}
+        for k in ("loss", "vm_loss", "lm_loss", "grad_norm", "learning_rate"):
+            if k in logs:
+                try:
+                    rec[k] = float(logs[k])
+                except (TypeError, ValueError):
+                    rec[k] = logs[k]
+        m = model
+        if m is not None:
+            if hasattr(m, "module"):
+                m = m.module
+            try:
+                inv = m.get_model().mm_inv_projector
+                stats = getattr(inv, "_last_timestep_stats", None)
+                if isinstance(stats, dict):
+                    rec.update(stats)
+            except Exception:
+                pass
+        out = os.path.join(args.output_dir, "early_steps.jsonl")
+        with open(out, "a") as f:
+            f.write(json.dumps(rec) + "\n")
+
+
 class RossTrainer(Trainer):
 
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
@@ -142,6 +178,7 @@ class RossTrainer(Trainer):
                 self.args.train_batch_size,
                 world_size=self.args.world_size * self.args.gradient_accumulation_steps,
                 lengths=lengths,
+                generator=torch.Generator().manual_seed(self.args.seed),
                 group_by_modality=True,
             )
         else:
@@ -229,7 +266,7 @@ class RossTrainer(Trainer):
 
         return self.optimizer
 
-    def _save_checkpoint(self, model, trial):
+    def _save_checkpoint(self, model, trial, metrics=None):
         if getattr(self.args, 'tune_mm_mlp_adapter', False):
             from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
             checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
@@ -255,7 +292,7 @@ class RossTrainer(Trainer):
                 self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_inv_projector.bin'))
         else:
-            super(RossTrainer, self)._save_checkpoint(model, trial)
+            super(RossTrainer, self)._save_checkpoint(model, trial, metrics=metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         print(f"=> saving to {output_dir}")
@@ -270,11 +307,23 @@ class RossTrainer(Trainer):
         if outputs.get('vm_loss', None) is not None:
             assert outputs.get('lm_loss', None) is not None
 
-            vm_loss = outputs['vm_loss']
-            lm_loss = outputs['lm_loss']
             if self.state.global_step % (self.args.logging_steps * self.args.gradient_accumulation_steps) == 0:
-                self.log({"vm_loss": round(vm_loss.item(), 4),
-                          "lm_loss": round(lm_loss.item(), 4)})
+                # All ranks must take the same CUDA sync path (.item); only rank0 logs.
+                vm_v = outputs['vm_loss'].detach().float().item()
+                lm_v = outputs['lm_loss'].detach().float().item()
+                if self.is_world_process_zero():
+                    self.log({"vm_loss": round(vm_v, 4), "lm_loss": round(lm_v, 4)})
 
         return (loss, outputs) if return_outputs else loss
+
+    def training_step(self, model, inputs, *args, **kwargs):
+        loss = super().training_step(model, inputs, *args, **kwargs)
+        # Optional synchronized empty_cache. Default OFF: an unconditional
+        # barrier here deadlocks if any rank stalls inside forward/backward
+        # (matches the reproducible hang after optimizer step 166).
+        if os.environ.get("ROSS_SYNC_EMPTY_CACHE", "0") == "1":
+            torch.cuda.empty_cache()
+            if torch.distributed.is_available() and torch.distributed.is_initialized():
+                torch.distributed.barrier()
+        return loss
 

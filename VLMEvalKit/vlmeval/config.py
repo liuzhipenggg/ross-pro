@@ -1409,6 +1409,7 @@ ross_series = {
     "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k/checkpoint-5755"),
     "ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/ross-siglip-qwen2-7b-flux-kl8-dit3x-pt558k-sft737k-ftclip/checkpoint-5755"),
     "llava-siglip-qwen2-7b-pt558k-sft737k": partial(Ross, model_path="../checkpoints/llava-siglip-qwen2-7b-pt558k-sft737k/checkpoint-5755"),
+    "llava-siglip-qwen2-7b-pt558k-sft737k-ftclip": partial(Ross, model_path="../checkpoints/llava-siglip-qwen2-7b-pt558k-sft737k-ftclip/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd14-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd14-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-sft737k-ftclip-ftsd/checkpoint-5755"),
@@ -1423,6 +1424,7 @@ ross_series = {
     "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ftsd-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ftsd-sft737k-ftclip-ftsd/checkpoint-5755"),
 
     "ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd15-kl8-mlp2x-pt558k-xomni-sft737k-ftclip-ftsd/checkpoint-5755"),
+    "ross-pro-siglip-qwen2-7b-sd35-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd35-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-768-sft737k-768-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd21-kl8-mlp2x-pt558k-768-sft737k-768-ftclip-ftsd/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ct558k-ftsd-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-ct558k-ftsd-sft737k-ftclip-ftsd/checkpoint-5755"),
     "ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd": partial(Ross, model_path="../checkpoints/ross-pro-siglip-qwen2-7b-sd3-kl8-mlp2x-pt558k-xomni-ftsd-sft737k-ftclip-ftsd/checkpoint-5755"),

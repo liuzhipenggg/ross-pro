@@ -1,6 +1,8 @@
+import os
+import re
+
 import torch
 import torch.nn as nn
-import re
 
 from ross.model.multimodal_denoiser.denoiser_dit import RossDenoiser
 from ross.model.multimodal_denoiser.denoiser_sd import RossStableDiffusion
@@ -9,6 +11,15 @@ from ross.model.multimodal_denoiser.denoiser_sd3 import RossSD3
 from ross.model.multimodal_denoiser.denoiser_sd3_xomni import RossSD3XOmni
 from ross.model.multimodal_denoiser.denoiser_sdxl import RossStableDiffusionXL
 from ross.model.multimodal_denoiser.denoiser_sdxl_xomni import RossStableDiffusionXLXOmni
+
+# ross/model/multimodal_projector/builder.py -> repo root
+_ROSS_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+
+def _neg_prompt(name: str) -> str:
+    """Resolve negative-prompt tensors shipped at the ross-pro repo root."""
+    env_key = f"ROSS_{name.upper().replace('.', '_').replace('-', '_')}"
+    return os.environ.get(env_key, os.path.join(_ROSS_ROOT, name))
 
 
 class IdentityMap(nn.Module):
@@ -98,7 +109,7 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             unet_path=unet_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd14.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sd14.pt"),
         )
 
     elif projector_type.startswith("sd15_"):
@@ -128,7 +139,7 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             unet_path=unet_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd15.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sd15.pt"),
         )
 
 
@@ -159,7 +170,7 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             unet_path=unet_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd21.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sd21.pt"),
         )
 
     elif projector_type.startswith("sd3_"):
@@ -190,8 +201,8 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             transformer_path=transformer_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd3.pt",
-            negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd3.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sd3.pt"),
+            negative_pooled_prompt_path=_neg_prompt("negative_pooled_prompt_sd3.pt"),
         )
 
     elif projector_type.startswith("sd35_"):
@@ -222,8 +233,8 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             transformer_path=transformer_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd35.pt",
-            negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sd35.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sd35.pt"),
+            negative_pooled_prompt_path=_neg_prompt("negative_pooled_prompt_sd35.pt"),
         )
     
     elif projector_type.startswith("sdxl_"):
@@ -254,8 +265,8 @@ def build_inv_projector(config, delay_load=False, **kwargs):
             unet_path=unet_path,
             mlp_depth=mlp_depth,
             n_patches=config.image_embed_len,
-            negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sdxl.pt",
-            negative_pooled_prompt_path="/root/paddlejob/ross-pro/negative_pooled_prompt_sdxl.pt",
+            negative_prompt_path=_neg_prompt("negative_prompt_sdxl.pt"),
+            negative_pooled_prompt_path=_neg_prompt("negative_pooled_prompt_sdxl.pt"),
         )
 
     raise ValueError(f'Unknown projector type: {projector_type}')

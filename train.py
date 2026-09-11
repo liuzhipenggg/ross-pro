@@ -43,7 +43,7 @@ from ross.constants import (
     DEFAULT_IM_END_TOKEN,
 )
 from torch.utils.data import Dataset
-from ross.ross_trainer import RossTrainer
+from ross.ross_trainer import EarlyStepLoggerCallback, RossTrainer
 
 from ross import conversation as conversation_lib
 from ross.model import *
@@ -135,8 +135,9 @@ class TrainingArguments(transformers.TrainingArguments):
     mm_inv_projector_lr: Optional[float] = None
     mm_vision_tower_lr: Optional[float] = None
     group_by_modality_length: bool = field(default=False)
-    save_steps: int = 5000,
-    save_total_limit: int = 1,
+    # NOTE: do not write `= 5000,` — trailing comma makes a tuple default and breaks Trainer.
+    save_steps: int = 5000
+    save_total_limit: int = 1
 
 
 def maybe_zero_3(param, ignore_status=False, name=None):
@@ -960,11 +961,14 @@ class LazySupervisedDataset(Dataset):
 
     @property
     def modality_lengths(self):
-        length_list = [1] * len(self.list_data_dict)
-        # for sample in self.list_data_dict:
-        #     cur_len = sum(len(conv['value'].split()) for conv in sample['conversations'])
-        #     cur_len = cur_len if 'image' in sample else -cur_len
-        #     length_list.append(cur_len)
+        # Must reflect real sample lengths. Returning all-1s disables length
+        # balancing and lets one rank draw a near-8192 padded batch while peers
+        # stay short — ZeRO-3 then desyncs / hangs (repro around step 166).
+        length_list = []
+        for sample in self.list_data_dict:
+            cur_len = sum(len(conv['value'].split()) for conv in sample['conversations'])
+            cur_len = cur_len if 'image' in sample else -cur_len
+            length_list.append(cur_len)
         return length_list
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
@@ -976,11 +980,20 @@ class LazySupervisedDataset(Dataset):
             image_file = self.list_data_dict[i]['image']
             image_folder = self.data_args.image_folder
             processor = self.data_args.image_processor
-            try:
-                bytes_data = base64.b64decode(image_file)
-            except:
-                with megfile.smart_open(os.path.join(image_folder, image_file), "rb") as f:
+            # Prefer filesystem paths. Some relative paths (e.g. vg/...) accidentally
+            # pass base64.b64decode without raising and then break PIL.
+            image_path = os.path.join(image_folder, image_file) if image_folder else image_file
+            if isinstance(image_file, (bytes, bytearray)):
+                bytes_data = bytes(image_file)
+            elif isinstance(image_file, str) and os.path.isfile(image_path):
+                with megfile.smart_open(image_path, "rb") as f:
                     bytes_data = f.read()
+            else:
+                try:
+                    bytes_data = base64.b64decode(image_file, validate=True)
+                except Exception:
+                    with megfile.smart_open(image_path, "rb") as f:
+                        bytes_data = f.read()
             image = Image.open(io.BytesIO(bytes_data), 'r').convert('RGB')
             if self.data_args.image_aspect_ratio == 'pad':
                 def expand2square(pil_img, background_color):
@@ -1301,6 +1314,47 @@ def train(attn_implementation="flash_attention_2"):
     print(f">> Total params: {total_params / 1.e6}M")
     print(f">> Train params: {train_params / 1.e6}M, Ratio {train_params / total_params * 100.:.2f}%")
     print(f">> Save every {training_args.save_steps} steps.")
+    if local_rank in (0, -1, None):
+        dump_dir = pathlib.Path(training_args.output_dir)
+        dump_dir.mkdir(parents=True, exist_ok=True)
+        rows = []
+        for n, p in model.named_parameters():
+            if p.requires_grad:
+                numel = p.ds_numel if hasattr(p, "ds_numel") else p.numel()
+                rows.append(f"{n}\t{tuple(p.shape)}\t{numel}")
+        (dump_dir / "trainable_params.txt").write_text("\n".join(rows) + "\n")
+        print(f">> dumped {len(rows)} trainable tensors to {dump_dir / 'trainable_params.txt'}")
+        # Step-0 adapter snapshot (before any optimizer step). Keep for all new runs.
+        step0 = dump_dir / "step0"
+        step0.mkdir(parents=True, exist_ok=True)
+        mm = get_mm_adapter_state_maybe_zero_3(model.named_parameters(), ["mm_projector"])
+        inv = get_mm_adapter_state_maybe_zero_3(model.named_parameters(), ["mm_inv_projector"])
+        p_mm = step0 / "mm_projector.bin"
+        p_inv = step0 / "mm_inv_projector.bin"
+        torch.save(mm, p_mm)
+        torch.save(inv, p_inv)
+        import hashlib
+
+        def _sha(p: pathlib.Path) -> str:
+            h = hashlib.sha256()
+            with p.open("rb") as f:
+                for chunk in iter(lambda: f.read(8 << 20), b""):
+                    h.update(chunk)
+            return h.hexdigest()
+
+        man = {
+            "train_params_M": train_params / 1.e6,
+            "total_params_M": total_params / 1.e6,
+            "n_trainable_tensors": len(rows),
+            "mm_projector_sha256": _sha(p_mm),
+            "mm_inv_projector_sha256": _sha(p_inv),
+            "mm_projector_bytes": p_mm.stat().st_size,
+            "mm_inv_projector_bytes": p_inv.stat().st_size,
+            "tune_mm_mlp_adapter": bool(model_args.tune_mm_mlp_adapter),
+            "mm_inv_projector_type": getattr(model_args, "mm_inv_projector_type", None),
+        }
+        (step0 / "manifest.json").write_text(json.dumps(man, indent=2) + "\n")
+        print(f">> step-0 adapters saved {step0} mm={man['mm_projector_sha256'][:12]} inv={man['mm_inv_projector_sha256'][:12]}")
 
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
@@ -1308,6 +1362,7 @@ def train(attn_implementation="flash_attention_2"):
         model=model,
         tokenizer=tokenizer,
         args=training_args,
+        callbacks=[EarlyStepLoggerCallback()],
         **data_module,
     )
 
@@ -1336,4 +1391,15 @@ def train(attn_implementation="flash_attention_2"):
 
 
 if __name__ == "__main__":
-    train()
+    import os
+
+    attn = os.environ.get("ROSS_ATTN_IMPLEMENTATION") or None
+    if not attn:
+        try:
+            import flash_attn  # noqa: F401
+            attn = "flash_attention_2"
+        except ImportError:
+            attn = "sdpa"
+            print(">> flash_attn not installed; using attn_implementation=sdpa")
+    print(f">> attn_implementation={attn}")
+    train(attn_implementation=attn)

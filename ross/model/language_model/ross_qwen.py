@@ -16,8 +16,9 @@
 #    LLaVA: https://github.com/haotian-liu/LLaVA
 #    transformers: https://github.com/huggingface/transformers
 #    --------------------------------------------------------
-import sys
 import math
+import os
+import sys
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -33,6 +34,45 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.generation.utils import GenerateOutput
 
 from ..ross_arch import RossMetaModel, RossMetaForCausalLM, CausalLMOutputWithPastWithVM
+
+
+def compute_lm_loss(
+    lm_head: nn.Module,
+    hidden_states: torch.Tensor,
+    labels: torch.Tensor,
+) -> torch.Tensor:
+    """LM CE without materializing a full fp32 logits tensor.
+
+    IMPORTANT: all ranks must take the same module-call graph (ZeRO-3). Do not
+    branch on local sequence length — that changes allgather counts and hangs.
+    """
+    shift_labels = labels[..., 1:].contiguous().view(-1)
+    ignore = -100
+
+    use_flash = os.environ.get("ROSS_FLASH_CE", "1") != "0"
+    if use_flash:
+        try:
+            from flash_attn.losses.cross_entropy import CrossEntropyLoss as FlashCE
+
+            logits = lm_head(hidden_states)
+            shift_logits = logits[..., :-1, :].contiguous()
+            # mean reduction matches torch CE default; identical call count every step
+            loss_fct = FlashCE(ignore_index=ignore, reduction="mean", inplace_backward=True)
+            return loss_fct(
+                shift_logits.view(-1, shift_logits.size(-1)),
+                shift_labels.to(shift_logits.device),
+            )
+        except Exception:
+            pass
+
+    # Non-flash fallback: still one lm_head call (same graph on all ranks).
+    logits = lm_head(hidden_states).float()
+    shift_logits = logits[..., :-1, :].contiguous()
+    loss_fct = nn.CrossEntropyLoss(ignore_index=ignore)
+    return loss_fct(
+        shift_logits.view(-1, shift_logits.size(-1)),
+        shift_labels.to(shift_logits.device),
+    )
 
 
 class RossConfig(Qwen2Config):
@@ -184,32 +224,26 @@ class RossQwen2ForCausalLM(Qwen2ForCausalLM, RossMetaForCausalLM):
         )
 
         hidden_states = outputs[0]
-        logits = self.lm_head(hidden_states)
-        logits = logits.float()
 
         loss, lm_loss = None, None
+        logits = None
         if labels is not None:
-            # Shift so that tokens < n predict n
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            # Flatten the tokens
-            loss_fct = nn.CrossEntropyLoss()
-            shift_logits = shift_logits.view(-1, self.config.vocab_size)
-            shift_labels = shift_labels.view(-1)
-            # Enable model parallelism
-            shift_labels = shift_labels.to(shift_logits.device)
-            loss = loss_fct(shift_logits, shift_labels)
-
+            # Chunked CE: avoid materializing full [B,S,V] float32 logits (can be >7GB
+            # and has caused OOM / ZeRO-3 NCCL desync under memory pressure).
+            loss = compute_lm_loss(self.lm_head, hidden_states, labels)
             lm_loss = loss.detach().clone()
+        else:
+            logits = self.lm_head(hidden_states)
+            logits = logits.float()
 
         vm_loss = None
         if self.training and getattr(self.config, 'ross_enable', False):
             # vm_loss = self.compute_vm_loss(images, hidden_states, boi_ids, eoi_ids)
             vm_loss = self.compute_vm_loss_sd(images, hidden_states, boi_ids, eoi_ids)
-            loss = loss + vm_loss
+            loss = loss + vm_loss if loss is not None else vm_loss
 
         if not return_dict:
-            output = (logits,) + outputs[1:]
+            output = ((logits,) + outputs[1:]) if logits is not None else outputs[1:]
             return (loss,) + output if loss is not None else output
 
         return CausalLMOutputWithPastWithVM(

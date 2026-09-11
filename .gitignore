@@ -40,3 +40,13 @@ mmtbench/*/*.png
 mmtbench/*/*.json
 allbench/*/*.png
 allbench/*/*.json
+
+.venv-ross/
+logs/
+data/
+checkpoints/
+outputs/
+
+.cursor/
+.vscode/
+.wheels/

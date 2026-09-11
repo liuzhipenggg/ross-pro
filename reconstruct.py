@@ -61,8 +61,32 @@ def combine_images_horizontal(img1, img2, output_path):
     return combined
 
 
+def _default_dinov2_path():
+    for p in [
+        os.environ.get("DINOV2_PATH"),
+        "/mnt/vdb1/yingyan.li/haochen.wang/hf_home/dinov2-large",
+        "/root/paddlejob/dinov2-large",
+        "facebook/dinov2-large",
+    ]:
+        if p and (os.path.isdir(p) or "/" not in p):
+            return p
+    return "facebook/dinov2-large"
+
+
+def _lmu_data_root():
+    for p in [
+        os.environ.get("LMUData"),
+        os.path.abspath("./data/LMUData"),
+        os.path.expanduser("~/LMUData"),
+        "/root/LMUData",
+    ]:
+        if p and os.path.isdir(p):
+            return p
+    return "/root/LMUData"
+
+
 class DINOv2Score():
-    def __init__(self, model_name="/root/paddlejob/dinov2-large"):
+    def __init__(self, model_name=None):
         """
         Initialize DINOv2 model and processor
         Args:
@@ -70,7 +94,7 @@ class DINOv2Score():
                        Options: facebook/dinov2-base, facebook/dinov2-large, facebook/dinov2-giant
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_name = model_name
+        self.model_name = model_name or _default_dinov2_path()
         self.model = None
         self.processor = None
         self._load_model_and_transform()
@@ -185,12 +209,14 @@ def eval_model(args):
     vae_image_processor = VaeImageProcessor(vae_scale_factor=8)
 
     # load images
+    lmu_root = _lmu_data_root()
+    print(f"=> LMUData root: {lmu_root}")
     result_path = f"./VLMEvalKit/outputs/{args.model_path}/{args.model_path}_MMT-Bench_VAL.xlsx"
     data = pd.read_excel(result_path, sheet_name="Sheet1").to_dict("records")
     os.makedirs(f"./mmtbench/{args.model_path}", exist_ok=True)
     results = []
     for idx, item in enumerate(tqdm(data)):
-        img_path = f"/root/LMUData/images/MMT-Bench_VAL/{item['index']}.jpg"
+        img_path = f"{lmu_root}/images/MMT-Bench_VAL/{item['index']}.jpg"
 
         info = {
             "index": item["index"],
@@ -241,7 +267,7 @@ def eval_model(args):
 
             hidden_states = outputs[0]
 
-            if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder or "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder or "stable-diffusion-xl-base-1.0" in model.config.mm_pixel_decoder:
+            if "stable-diffusion-3-medium-diffusers" in model.config.mm_pixel_decoder or "stable-diffusion-3.5-medium" in model.config.mm_pixel_decoder or "stable-diffusion-2-1" in model.config.mm_pixel_decoder or "stable-diffusion-v1-5" in model.config.mm_pixel_decoder or "stable-diffusion-v1-4" in model.config.mm_pixel_decoder or "stable-diffusion-xl-base-1.0" in model.config.mm_pixel_decoder:
                 # DDPM / FlowMatching inference here
                 recon_img_tensor = model.inference_sd(
                     images=img_tensor,

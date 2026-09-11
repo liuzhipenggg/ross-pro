@@ -1,4 +1,5 @@
 import math
+import os
 
 import numpy as np
 import torch
@@ -13,6 +14,9 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import retri
 
 from ross.model.multimodal_denoiser.modeling.unet_2d_condition import UNet2DConditionModel
 
+_ROSS_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_DEFAULT_NEG = os.path.join(_ROSS_ROOT, "negative_prompt_sd15.pt")
+
 
 class RossStableDiffusionXOmni(nn.Module):
     def __init__(
@@ -21,13 +25,13 @@ class RossStableDiffusionXOmni(nn.Module):
         z_channel,
         mlp_depth,
         n_patches=576,
-        negative_prompt_path="/root/paddlejob/ross-pro/negative_prompt_sd15.pt",
+        negative_prompt_path=None,
     ):
         super().__init__()
         self.ln_pre = nn.LayerNorm(z_channel, elementwise_affine=False)
         self.pos_embed = nn.Parameter(torch.zeros(1, n_patches, z_channel), requires_grad=True)
         torch.nn.init.normal_(self.pos_embed, std=.02)
-        self.negative_prompt_path = negative_prompt_path
+        self.negative_prompt_path = negative_prompt_path or _DEFAULT_NEG
 
         self.unet = UNet2DConditionModel.from_pretrained(unet_path)
         self.unet.train()
